@@ -1,22 +1,49 @@
-# ==============================================================================
-# 1. THE VAULT LOCATION (DB SUBNET GROUP)
-# ==============================================================================
+# 1. Grab your dynamic AWS Account ID
+data "aws_caller_identity" "current" {}
 
-# We have to explicitly tell AWS to put this database in our Private Subnets,
-# otherwise it might try to deploy it in the default public subnets.
+# 2. The KMS Padlock (Encryption at Rest)
+resource "aws_kms_key" "clinicflow_db_key" {
+  description             = "KMS key for ClinicFlow RDS encryption"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+  
+  tags = {
+    Name = "ClinicFlow-KMS"
+  }
+}
+
+# 3. The Strict KMS Policy (Who holds the key)
+resource "aws_kms_key_policy" "clinicflow_db_key_policy" {
+  key_id = aws_kms_key.clinicflow_db_key.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "Enable IAM User Permissions"
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+        Action   = "kms:*"
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# 4. The Private Subnet Routing
 resource "aws_db_subnet_group" "clinicflow_db_subnet_group" {
   name       = "clinicflow-db-subnet-group"
   subnet_ids = [aws_subnet.private_a.id, aws_subnet.private_b.id]
 
   tags = {
-    Name = "ClinicFlow-DB-Subnet-Group"
+    Name = "ClinicFlow DB Subnet Group"
   }
 }
+# checkov:skip=CKV_AWS_293:Lab Environment - Deletion protection blocks 'terraform destroy'.
+# checkov:skip=CKV_AWS_118:FinOps - Enhanced monitoring incurs additional CloudWatch costs.
 
-# ==============================================================================
-# 2. THE CORE ASSET (MULTI-AZ RDS DATABASE)
-# ==============================================================================
-
+# 5. The MedSpa Data Vault
 resource "aws_db_instance" "clinicflow_db" {
   identifier           = "clinicflow-database-production"
   engine               = "mysql"
@@ -24,23 +51,25 @@ resource "aws_db_instance" "clinicflow_db" {
   instance_class       = "db.t3.micro"
   allocated_storage    = 20
   
-  # The Master Credentials (In a real production DevSecOps pipeline, 
-  # these would be dynamically injected by AWS Secrets Manager, not hardcoded).
   username             = "clinicadmin"
   password             = "SuperSecretPassword123!" 
   
-  # The High Availability Switch (Synchronous Standby in AZ-B)
   multi_az             = true
-
-  # The Zero-Trust Network Placements
+  
   db_subnet_group_name   = aws_db_subnet_group.clinicflow_db_subnet_group.name
   vpc_security_group_ids = [aws_security_group.db_sg.id]
   
-  # Hafner's Rule: The absolute guarantee that it has no path to the internet.
   publicly_accessible    = false
-  
-  # Skip final snapshot so we can easily destroy this lab environment later
   skip_final_snapshot    = true
+  
+enabled_cloudwatch_logs_exports = ["audit", "error", "general", "slowquery"]
+
+  # --- THE HIPAA UPGRADES ---
+  storage_encrypted                   = true
+  kms_key_id                          = aws_kms_key.clinicflow_db_key.arn
+  iam_database_authentication_enabled = true
+  auto_minor_version_upgrade          = true
+  copy_tags_to_snapshot               = true
 
   tags = {
     Name = "ClinicFlow-Production-DB"

@@ -28,7 +28,7 @@ resource "aws_subnet" "public_a" {
   vpc_id                  = aws_vpc.clinicflow_vpc.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "us-east-1a"
-  map_public_ip_on_launch = true # Brikman Best Practice: Explicitly state this
+  map_public_ip_on_launch = false # Brikman Best Practice: Explicitly state this
 
   tags = {
     Name = "Public-Subnet-A"
@@ -39,7 +39,7 @@ resource "aws_subnet" "public_b" {
   vpc_id                  = aws_vpc.clinicflow_vpc.id
   cidr_block              = "10.0.2.0/24"
   availability_zone       = "us-east-1b"
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = false
 
   tags = {
     Name = "Public-Subnet-B"
@@ -145,4 +145,11 @@ resource "aws_route_table_association" "private_a_assoc" {
 resource "aws_route_table_association" "private_b_assoc" {
   subnet_id      = aws_subnet.private_b.id
   route_table_id = aws_route_table.private_rt.id
+}
+# The VPC Flow Log wire
+resource "aws_flow_log" "clinicflow_vpc_flow_log" {
+  log_destination      = aws_s3_bucket.clinicflow_logs.arn
+  log_destination_type = "s3"
+  traffic_type         = "ALL"
+  vpc_id               = aws_vpc.clinicflow_vpc.id
 }
