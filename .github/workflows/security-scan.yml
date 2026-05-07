@@ -23,6 +23,6 @@ jobs:
           directory: .
           framework: terraform
           # We tell it to strictly check for HIPAA and PCI compliance frameworks
-          check: CKV_AWS_* skip_check: CKV_AWS_20 # Example: Skipping a low-level check if needed
+          check: CKV_AWS_* skip_check: CKV_AWS_20 
           quiet: false
-          soft_fail: true # Set to true for now so it doesn't block you while learning
+          soft_fail: true
