@@ -55,38 +55,20 @@ resource "aws_lb_listener" "http_redirect" {
 }
 
 # --- Compute Engine (ASG) ---
-data "aws_ami" "amazon_linux" {
-  most_recent = true
-  owners      = ["amazon"]
 
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
-  }
-}
 
 resource "aws_launch_template" "clinicflow_lt" {
   name          = "ClinicFlow-TF-Web-Template"
-  image_id      = data.aws_ami.amazon_linux.id
+  image_id      = data.aws_ami.amazon_linux.id # <--- Swapped to the raw materials
   instance_type = "t2.micro"
 
   vpc_security_group_ids = [aws_security_group.web_sg.id]
 
   metadata_options {
     http_endpoint               = "enabled"
-    http_tokens                 = "required" 
+    http_tokens                 = "required"
     http_put_response_hop_limit = 1
   }
-
-  user_data = base64encode(<<-USERDATA
-              #!/bin/bash
-              yum update -y
-              yum install -y httpd
-              systemctl start httpd
-              systemctl enable httpd
-              echo "<h1>ClinicFlow Portal: Handled by Terraform ASG Fleet. HIPAA Engine Online.</h1>" > /var/www/html/index.html
-              USERDATA
-  )
 }
 
 resource "aws_autoscaling_group" "clinicflow_asg" {

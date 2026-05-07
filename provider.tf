@@ -10,7 +10,7 @@ terraform {
 # Configure the AWS Provider
 provider "aws" {
   region = "us-east-1"
-  
+
   # DevSecOps Tie-in: Default Tags
   # Every single resource created will automatically get these tags for auditing.
   default_tags {

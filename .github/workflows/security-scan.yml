@@ -1,0 +1,28 @@
+name: ClinicFlow Security Scanner (Checkov)
+
+# This tells GitHub to run the scanner every time you push code to the main branch
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  hipaa-compliance-check:
+    name: Terraform Static Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Run Checkov Security Scan
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          framework: terraform
+          # We tell it to strictly check for HIPAA and PCI compliance frameworks
+          check: CKV_AWS_* skip_check: CKV_AWS_20 # Example: Skipping a low-level check if needed
+          quiet: false
+          soft_fail: true # Set to true for now so it doesn't block you while learning

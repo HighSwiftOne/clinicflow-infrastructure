@@ -6,7 +6,7 @@ resource "aws_kms_key" "clinicflow_db_key" {
   description             = "KMS key for ClinicFlow RDS encryption"
   deletion_window_in_days = 7
   enable_key_rotation     = true
-  
+
   tags = {
     Name = "ClinicFlow-KMS"
   }
@@ -45,24 +45,24 @@ resource "aws_db_subnet_group" "clinicflow_db_subnet_group" {
 
 # 5. The MedSpa Data Vault
 resource "aws_db_instance" "clinicflow_db" {
-  identifier           = "clinicflow-database-production"
-  engine               = "mysql"
-  engine_version       = "8.0"
-  instance_class       = "db.t3.micro"
-  allocated_storage    = 20
-  
-  username             = "clinicadmin"
-  password             = "SuperSecretPassword123!" 
-  
-  multi_az             = true
-  
+  identifier        = "clinicflow-database-production"
+  engine            = "mysql"
+  engine_version    = "8.0"
+  instance_class    = "db.t3.micro"
+  allocated_storage = 20
+
+  username = "clinicadmin"
+  password = "SuperSecretPassword123!"
+
+  multi_az = true
+
   db_subnet_group_name   = aws_db_subnet_group.clinicflow_db_subnet_group.name
   vpc_security_group_ids = [aws_security_group.db_sg.id]
-  
-  publicly_accessible    = false
-  skip_final_snapshot    = true
-  
-enabled_cloudwatch_logs_exports = ["audit", "error", "general", "slowquery"]
+
+  publicly_accessible = false
+  skip_final_snapshot = true
+
+  enabled_cloudwatch_logs_exports = ["audit", "error", "general", "slowquery"]
 
   # --- THE HIPAA UPGRADES ---
   storage_encrypted                   = true
