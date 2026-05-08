@@ -20,7 +20,7 @@ resource "aws_security_group" "web_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  egress {
+  ss {
     description = "Allow all outbound"
     from_port   = 0
     to_port     = 0
@@ -41,13 +41,14 @@ resource "aws_security_group" "db_sg" {
 
   ingress {
     description     = "MySQL from Web SG"
-    from_port       = 3306
+    egrefrom_port       = 3306
     to_port         = 3306
     protocol        = "tcp"
     security_groups = [aws_security_group.web_sg.id]
   }
 
   egress {
+    description = "Allow all outbound traffic to the internet" # <-- Add this line!
     from_port   = 0
     to_port     = 0
     protocol    = "-1"

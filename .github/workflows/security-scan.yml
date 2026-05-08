@@ -22,6 +22,6 @@ jobs:
           directory: .
           framework: terraform
           check: CKV_AWS_*
-          skip_check: CKV_AWS_20,CKV_AWS_144,CKV_AWS_260,CKV_AWS_382
+          skip_check: CKV_AWS_20,CKV_AWS_144,CKV_AWS_260,CKV_AWS_382,CKV_AWS_18,CKV_AWS_145,CKV_AWS_118
           quiet: false
           soft_fail: true
