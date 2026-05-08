@@ -20,7 +20,7 @@ resource "aws_security_group" "web_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  ss {
+  egress {
     description = "Allow all outbound"
     from_port   = 0
     to_port     = 0
@@ -35,20 +35,20 @@ resource "aws_security_group" "web_sg" {
 
 # --- Database Security Group (The Vault) ---
 resource "aws_security_group" "db_sg" {
-  name        = "ClinicFlow-DB-SG"
-  description = "Allow traffic only from Web Tier"
-  vpc_id      = aws_vpc.clinicflow_vpc.id
+  name        = "clinicflow-db-sg"
+  description = "Allow private traffic to RDS"
+  vpc_id = aws_vpc.clinicflow_vpc.id
 
   ingress {
-    description     = "MySQL from Web SG"
-    egrefrom_port       = 3306
+    description     = "Allow MySQL from Web SG"
+    from_port       = 3306
     to_port         = 3306
     protocol        = "tcp"
     security_groups = [aws_security_group.web_sg.id]
   }
 
   egress {
-    description = "Allow all outbound traffic to the internet" # <-- Add this line!
+    description = "Allow database to communicate outbound"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"

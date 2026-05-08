@@ -1,11 +1,15 @@
 # --- Phase 1: The Identity Shield ---
-policy = jsonencode({
+resource "aws_iam_policy" "image_builder_boundary" {
+  name        = "ClinicFlow-ImageBuilder-Boundary"
+  description = "Ensures the factory can only touch specific resources"
+  
+  policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
         Action   = ["ec2:Describe*"]
         Effect   = "Allow"
-        Resource = "*" # EC2 Describe requires an asterisk by AWS design
+        Resource = "*" 
       },
       {
         Action   = ["s3:Get*", "s3:List*"]
@@ -13,10 +17,11 @@ policy = jsonencode({
         Resource = [
           "arn:aws:s3:::clinicflow-*",
           "arn:aws:s3:::clinicflow-*/*"
-        ] # Restricts access to ONLY ClinicFlow buckets
+        ] 
       }
     ]
   })
+}
 
 
 
@@ -123,3 +128,4 @@ resource "aws_imagebuilder_image_recipe" "clinicflow_recipe" {
     component_arn = "arn:aws:imagebuilder:${data.aws_region.current.name}:aws:component/update-linux/x.x.x"
   }
 }
+
