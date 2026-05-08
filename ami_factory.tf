@@ -1,19 +1,23 @@
 # --- Phase 1: The Identity Shield ---
-resource "aws_iam_policy" "image_builder_boundary" {
-  name        = "ClinicFlow-ImageBuilder-Boundary"
-  description = "Ensures the factory can only touch specific resources"
-
-  policy = jsonencode({
+policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Action   = ["ec2:Describe*", "s3:Get*", "s3:List*"]
+        Action   = ["ec2:Describe*"]
         Effect   = "Allow"
-        Resource = "*"
+        Resource = "*" # EC2 Describe requires an asterisk by AWS design
+      },
+      {
+        Action   = ["s3:Get*", "s3:List*"]
+        Effect   = "Allow"
+        Resource = [
+          "arn:aws:s3:::clinicflow-*",
+          "arn:aws:s3:::clinicflow-*/*"
+        ] # Restricts access to ONLY ClinicFlow buckets
       }
     ]
   })
-}
+
 
 
 # --- 1. The Factory Worker (IAM Role & Profile) ---

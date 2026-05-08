@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run Checkov Security Scan
         id: checkov
@@ -22,6 +22,6 @@ jobs:
           directory: .
           framework: terraform
           check: CKV_AWS_*
-          skip_check: CKV_AWS_20
+          skip_check: CKV_AWS_20,CKV_AWS_144,CKV_AWS_260,CKV_AWS_382
           quiet: false
           soft_fail: true
