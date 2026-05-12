@@ -1,27 +1,35 @@
-name: ClinicFlow Security Scanner (Checkov)
+name: ClinicFlow Security Scan
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
+
+# CRITICAL: This allows GitHub to request the identity token from AWS
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
-  hipaa-compliance-check:
-    name: Terraform Static Analysis
+  checkov-scan:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Code
+      - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Run Checkov Security Scan
-        id: checkov
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # Use the ARN you just generated
+          role-to-assume: arn:aws:iam::541495491866:role/ClinicFlow-GitHub-Actions-Role
+          aws-region: us-east-1
+
+      - name: Run Checkov Scan
         uses: bridgecrewio/checkov-action@master
         with:
-          directory: .
+          # Point this to your new module directory
+          directory: modules/clinicflow-vault
           framework: terraform
-          check: CKV_AWS_*
-          skip_check: CKV_AWS_20,CKV_AWS_144,CKV_AWS_260,CKV_AWS_382,CKV_AWS_18,CKV_AWS_145,CKV_AWS_118
-          quiet: false
           soft_fail: true
+
