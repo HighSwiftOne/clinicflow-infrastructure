@@ -1,5 +1,7 @@
+# Deployment Version: 2.0 - Final Slam
 import boto3
 import logging
+# ... (rest of the code)
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
