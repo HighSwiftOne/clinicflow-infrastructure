@@ -19,30 +19,41 @@ resource "aws_iam_role_policy" "lambda_s3_healer_limited" {
   role = aws_iam_role.lambda_healer_role.id
 
   policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid    = "AllowS3Remediation"
-        Effect = "Allow"
-        Action = [
-          "s3:PutBucketPublicAccessBlock",
-          "s3:GetBucketPublicAccessBlock"
-        ]
-        # Restricts the healer to only buckets starting with your project name
-        Resource = "*"
-      },
-      {
-        Sid    = "AllowLogging"
-        Effect = "Allow"
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ]
-        Resource = "arn:aws:logs:*:*:*"
-      }
+    {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowS3Discovery",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetBucketLocation",
+                "s3:ListAllMyBuckets"
+            ],
+            "Resource": "*" 
+        },
+        {
+            "Sid": "AllowS3Remediation",
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutBucketPublicAccessBlock",
+                "s3:GetBucketPublicAccessBlock"
+            ],
+            "Resource": [
+                "arn:aws:s3:::clinicflow-*",
+                "arn:aws:s3:::*" 
+            ]
+        },
+        {
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Effect": "Allow",
+            "Resource": "arn:aws:logs:*:*:*",
+            "Sid": "AllowLogging"
+        }
     ]
-  })
 }
 
 # 3. Create the actual Serverless Function
