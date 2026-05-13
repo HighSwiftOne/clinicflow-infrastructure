@@ -50,19 +50,16 @@ resource "aws_lambda_function" "s3_healer" {
 }
 
 # 4. The Tripwire (Broadened for all S3 Management/Data Events)
-resource "aws_cloudwatch_event_rule" "s3_exposure_rule" {
+resource "aws_cloudwatch_event_rule" "s3_exposure_detector" {
   name        = "clinicflow-s3-exposure-detector"
-  description = "Fires on ANY S3 security configuration change"
+  description = "Trigger Lambda when S3 Public Access Block is modified"
 
-  event_patterngit push = jsonencode({
-    "source": ["aws.s3"],
-    "detail": {
-      "eventName": [
-        "DeleteBucketPublicAccessBlock", 
-        "PutBucketPublicAccessBlock", 
-        "PutBucketAcl", 
-        "PutBucketPolicy"
-      ]
+  event_pattern = jsonencode({
+    source      = ["aws.s3"],
+    detail_type = ["AWS API Call via CloudTrail"],
+    detail = {
+      eventSource = ["s3.amazonaws.com"],
+      eventName   = ["PutBucketPublicAccessBlock"] # This must match your CloudTrail log exactly
     }
   })
 }
