@@ -57,17 +57,15 @@ resource "aws_lambda_function" "s3_healer" {
   timeout     = 15
 }
 
-# 4. The Tripwire (Hardened for Multi-Region/Global Events)
+# 4. The Tripwire (Broadened for all S3 Management/Data Events)
 resource "aws_cloudwatch_event_rule" "s3_exposure_rule" {
   name        = "clinicflow-s3-exposure-detector"
-  description = "Fires when someone attempts to make an S3 bucket public"
+  description = "Fires on ANY S3 security configuration change"
 
-  event_pattern = jsonencode({
-    source      = ["aws.s3"]
-    detail-type = ["AWS API Call via CloudTrail"]
-    detail = {
-      eventSource = ["s3.amazonaws.com"]
-      eventName = [
+  event_patterngit push = jsonencode({
+    "source": ["aws.s3"],
+    "detail": {
+      "eventName": [
         "DeleteBucketPublicAccessBlock", 
         "PutBucketPublicAccessBlock", 
         "PutBucketAcl", 
