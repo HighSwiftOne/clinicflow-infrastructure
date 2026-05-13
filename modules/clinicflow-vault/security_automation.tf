@@ -137,9 +137,19 @@ resource "aws_cloudtrail" "audit_trail" {
   is_multi_region_trail         = true
   enable_logging                = true
 
+  # NEW BLOCK: This enables the tripwire to "hear" S3 changes
+  event_selector {
+    read_write_type           = "All"
+    include_management_events = true
+
+    data_resource {
+      type   = "AWS::S3::Object"
+      values = ["arn:aws:s3:::"] # Listen to all S3 objects/buckets
+    }
+  }
+
   depends_on = [aws_s3_bucket_policy.cloudtrail_policy]
 }
-
 
 # Add to security_automation.tf (Encrypting the Audit Trail)
 resource "aws_s3_bucket_server_side_encryption_configuration" "cloudtrail_encryption" {
