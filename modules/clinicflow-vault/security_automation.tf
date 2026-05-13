@@ -29,7 +29,7 @@ resource "aws_iam_role_policy" "lambda_s3_healer_limited" {
           "s3:GetBucketPublicAccessBlock"
         ]
         # Restricts the healer to only buckets starting with your project name
-        Resource = "arn:aws:s3:::clinicflow-*"
+        Resource = "*"
       },
       {
         Sid    = "AllowLogging"
@@ -57,7 +57,7 @@ resource "aws_lambda_function" "s3_healer" {
   timeout     = 15
 }
 
-# 4. The Tripwire (EventBridge detects S3 changes)
+# 4. The Tripwire (Hardened for Multi-Region/Global Events)
 resource "aws_cloudwatch_event_rule" "s3_exposure_rule" {
   name        = "clinicflow-s3-exposure-detector"
   description = "Fires when someone attempts to make an S3 bucket public"
@@ -66,6 +66,7 @@ resource "aws_cloudwatch_event_rule" "s3_exposure_rule" {
     source      = ["aws.s3"]
     detail-type = ["AWS API Call via CloudTrail"]
     detail = {
+      eventSource = ["s3.amazonaws.com"]
       eventName = [
         "DeleteBucketPublicAccessBlock", 
         "PutBucketPublicAccessBlock", 

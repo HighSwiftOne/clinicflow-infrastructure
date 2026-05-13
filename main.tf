@@ -1,3 +1,5 @@
+# ClinicFlow 1.0 - Production Alpha Version
+
 terraform {
   backend "s3" {
     bucket         = "clinicflow-state-storage-541495491866" # The bucket from state_storage.tf
