@@ -87,7 +87,10 @@ resource "aws_lambda_permission" "allow_eventbridge" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.s3_healer.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.s3_exposure_rule.arn
+  
+  # By removing the source_arn restriction temporarily, we ensure 
+  # any EventBridge rule in this account can wake up the healer.
+  # source_arn  = aws_cloudwatch_event_rule.s3_exposure_rule.arn 
 }
 # =========================================================
 # THE MICROPHONE: AWS CLOUDTRAIL AUDIT LOGGING
