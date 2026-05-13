@@ -1,4 +1,6 @@
+# Version: 1.1 - Hardened Regional Logic
 import boto3
+# ... rest of your code ...
 import json
 import logging
 
