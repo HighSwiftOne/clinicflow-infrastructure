@@ -43,7 +43,7 @@ resource "aws_lambda_function" "s3_healer" {
   function_name    = "ClinicFlow-S3-Healer"
   role             = aws_iam_role.lambda_healer_role.arn
   handler          = "heal_s3.lambda_handler"
-  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  source_code_hash = data.archive_file.lambda.output_base64sha256
   runtime          = "python3.10"
   memory_size = 128
   timeout     = 15
