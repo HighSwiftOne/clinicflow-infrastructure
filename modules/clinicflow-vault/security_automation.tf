@@ -66,7 +66,12 @@ resource "aws_cloudwatch_event_rule" "s3_exposure_rule" {
     source      = ["aws.s3"]
     detail-type = ["AWS API Call via CloudTrail"]
     detail = {
-      eventName = ["DeleteBucketPublicAccessBlock", "PutBucketAcl", "PutBucketPolicy"]
+      eventName = [
+        "DeleteBucketPublicAccessBlock", 
+        "PutBucketPublicAccessBlock", 
+        "PutBucketAcl", 
+        "PutBucketPolicy"
+      ]
     }
   })
 }
