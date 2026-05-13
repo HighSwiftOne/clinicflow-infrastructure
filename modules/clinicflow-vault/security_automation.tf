@@ -74,11 +74,10 @@ resource "aws_cloudwatch_event_rule" "s3_exposure_detector" {
 
 # 5. Connect the Tripwire to the Python Script
 resource "aws_cloudwatch_event_target" "trigger_healer" {
-  # FIX: Match the resource name below
+  # FIX: Match the resource name from Section 4
   rule      = aws_cloudwatch_event_rule.s3_exposure_detector.name 
   target_id = "TriggerHealer"
   arn       = aws_lambda_function.s3_healer.arn
-}
 }
 
 resource "aws_lambda_permission" "allow_eventbridge" {
