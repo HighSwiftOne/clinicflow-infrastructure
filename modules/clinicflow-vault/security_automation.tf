@@ -6,20 +6,8 @@ data "archive_file" "lambda_zip" {
 }
 
 # 2. Give the script permission to modify S3 buckets
-resource "aws_iam_role" "lambda_healer_role" {
-  name = "clinicflow-autonomous-healer"
-  assume_role_policy = jsonencode({
-    Version   = "2012-10-17"
-    Statement = [{ Action = "sts:AssumeRole", Effect = "Allow", Principal = { Service = "lambda.amazonaws.com" } }]
-  })
-}
-
-resource "aws_iam_role_policy" "lambda_s3_healer_limited" {
-  name = "clinicflow-s3-healer-limited-policy"
-  role = aws_iam_role.lambda_healer_role.id
-
-  policy = jsonencode({
-    {
+# In modules/clinicflow-vault/security_automation.tf
+{
     "Version": "2012-10-17",
     "Statement": [
         {
@@ -38,20 +26,13 @@ resource "aws_iam_role_policy" "lambda_s3_healer_limited" {
                 "s3:PutBucketPublicAccessBlock",
                 "s3:GetBucketPublicAccessBlock"
             ],
-            "Resource": [
-                "arn:aws:s3:::clinicflow-*",
-                "arn:aws:s3:::*" 
-            ]
+            "Resource": "arn:aws:s3:::*" # Sledgehammer for testing; we will tighten later
         },
         {
-            "Action": [
-                "logs:CreateLogGroup",
-                "logs:CreateLogStream",
-                "logs:PutLogEvents"
-            ],
+            "Sid": "AllowLogging",
+            "Action": ["logs:*"],
             "Effect": "Allow",
-            "Resource": "arn:aws:logs:*:*:*",
-            "Sid": "AllowLogging"
+            "Resource": "arn:aws:logs:*:*:*"
         }
     ]
 }
