@@ -43,10 +43,12 @@ resource "aws_lambda_function" "s3_healer" {
   function_name    = "ClinicFlow-S3-Healer"
   role             = aws_iam_role.lambda_healer_role.arn
   handler          = "heal_s3.lambda_handler"
-  source_code_hash = data.archive_file.lambda.output_base64sha256
+  
+  # FIX: Match the data source name at the top
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256 
+  
   runtime          = "python3.10"
-  memory_size = 128
-  timeout     = 15
+  # ... rest of your config
 }
 
 # 4. The Tripwire (Broadened for all S3 Management/Data Events)
@@ -72,9 +74,11 @@ resource "aws_cloudwatch_event_rule" "s3_exposure_detector" {
 
 # 5. Connect the Tripwire to the Python Script
 resource "aws_cloudwatch_event_target" "trigger_healer" {
-  rule      = aws_cloudwatch_event_rule.s3_exposure_rule.name
+  # FIX: Match the resource name below
+  rule      = aws_cloudwatch_event_rule.s3_exposure_detector.name 
   target_id = "TriggerHealer"
   arn       = aws_lambda_function.s3_healer.arn
+}
 }
 
 resource "aws_lambda_permission" "allow_eventbridge" {
