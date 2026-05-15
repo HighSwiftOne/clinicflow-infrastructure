@@ -1,57 +1,103 @@
+# =========================================================
 # 1. Package the Python script into a ZIP file
+# =========================================================
 data "archive_file" "lambda_zip" {
   type        = "zip"
   source_file = "${path.module}/functions/heal_s3.py"
   output_path = "${path.module}/functions/heal_s3.zip"
 }
 
-# 2. Give the script permission to modify S3 buckets
-# In modules/clinicflow-vault/security_automation.tf
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "AllowS3Discovery",
-            "Effect": "Allow",
-            "Action": [
-                "s3:GetBucketLocation",
-                "s3:ListAllMyBuckets"
-            ],
-            "Resource": "*" 
-        },
-        {
-            "Sid": "AllowS3Remediation",
-            "Effect": "Allow",
-            "Action": [
-                "s3:PutBucketPublicAccessBlock",
-                "s3:GetBucketPublicAccessBlock"
-            ],
-            "Resource": "arn:aws:s3:::*" # Sledgehammer for testing; we will tighten later
-        },
-        {
-            "Sid": "AllowLogging",
-            "Action": ["logs:*"],
-            "Effect": "Allow",
-            "Resource": "arn:aws:logs:*:*:*"
+# =========================================================
+# 2. Give the script permission to modify S3 buckets & VPC
+# =========================================================
+resource "aws_iam_role" "lambda_healer_role" {
+  name = "ClinicFlow-S3-Healer-Role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
         }
+      }
     ]
+  })
 }
 
+resource "aws_iam_role_policy" "lambda_healer_policy" {
+  name = "ClinicFlow-S3-Healer-Policy"
+  role = aws_iam_role.lambda_healer_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid      = "AllowS3Discovery",
+        Effect   = "Allow",
+        Action   = [
+          "s3:GetBucketLocation",
+          "s3:ListAllMyBuckets"
+        ],
+        Resource = "*" 
+      },
+      {
+        Sid      = "AllowS3Remediation",
+        Effect   = "Allow",
+        Action   = [
+          "s3:PutBucketPublicAccessBlock",
+          "s3:GetBucketPublicAccessBlock"
+        ],
+        Resource = "arn:aws:s3:::*"
+      },
+      {
+        Sid      = "AllowLogging",
+        Effect   = "Allow",
+        Action   = ["logs:*"],
+        Resource = "arn:aws:logs:*:*:*"
+      },
+      {
+        Sid      = "AllowVPCAccess",
+        Effect   = "Allow",
+        Action   = [
+          "ec2:CreateNetworkInterface",
+          "ec2:DescribeNetworkInterfaces",
+          "ec2:DeleteNetworkInterface"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# =========================================================
 # 3. Create the actual Serverless Function
+# =========================================================
 resource "aws_lambda_function" "s3_healer" {
   filename         = data.archive_file.lambda_zip.output_path
   function_name    = "ClinicFlow-S3-Healer"
   role             = aws_iam_role.lambda_healer_role.arn
   handler          = "heal_s3.lambda_handler"
-  
-  # FIX: Match the data source name at the top
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256 
-  
   runtime          = "python3.10"
-  # ... rest of your config
+  memory_size      = 128
+  timeout          = 15
+
+  # The Invisible Bastion Connection
+  vpc_config {
+    subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+    security_group_ids = [aws_security_group.healer_sg.id]
+  }
+
+  # Force Terraform to wait for IAM permissions to propagate
+  depends_on = [aws_iam_role_policy.lambda_healer_policy]
 }
 
-# 4. The Tripwire (Broadened for all S3 Management/Data Events)
+# =========================================================
+# 4. The Tripwire (EventBridge)
+# =========================================================
 resource "aws_cloudwatch_event_rule" "s3_exposure_detector" {
   name        = "clinicflow-s3-exposure-detector"
   description = "Trigger Lambda when S3 Public Access Block is modified"
@@ -61,7 +107,6 @@ resource "aws_cloudwatch_event_rule" "s3_exposure_detector" {
     detail_type = ["AWS API Call via CloudTrail"],
     detail = {
       eventSource = ["s3.amazonaws.com"],
-      # ADD "PutBucketPublicAccessBlock" TO THIS LIST
       eventName   = [
         "PutBucketPublicAccessBlock", 
         "DeleteBucketPublicAccessBlock", 
@@ -72,9 +117,10 @@ resource "aws_cloudwatch_event_rule" "s3_exposure_detector" {
   })
 }
 
+# =========================================================
 # 5. Connect the Tripwire to the Python Script
+# =========================================================
 resource "aws_cloudwatch_event_target" "trigger_healer" {
-  # FIX: Match the resource name from Section 4
   rule      = aws_cloudwatch_event_rule.s3_exposure_detector.name 
   target_id = "TriggerHealer"
   arn       = aws_lambda_function.s3_healer.arn
@@ -85,22 +131,16 @@ resource "aws_lambda_permission" "allow_eventbridge" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.s3_healer.function_name
   principal     = "events.amazonaws.com"
-  
-  # By removing the source_arn restriction temporarily, we ensure 
-  # any EventBridge rule in this account can wake up the healer.
-  # source_arn  = aws_cloudwatch_event_rule.s3_exposure_rule.arn 
 }
-# =========================================================
-# THE MICROPHONE: AWS CLOUDTRAIL AUDIT LOGGING
-# =========================================================
 
-# 1. The Immutable Audit Bucket
+# =========================================================
+# 6. AWS CLOUDTRAIL AUDIT LOGGING
+# =========================================================
 resource "aws_s3_bucket" "cloudtrail_bucket" {
   bucket_prefix = "clinicflow-audit-"
   force_destroy = true
 }
 
-# 2. CloudTrail Bucket Permissions
 resource "aws_s3_bucket_policy" "cloudtrail_policy" {
   bucket = aws_s3_bucket.cloudtrail_bucket.id
   policy = jsonencode({
@@ -129,7 +169,6 @@ resource "aws_s3_bucket_policy" "cloudtrail_policy" {
   })
 }
 
-# 3. The CloudTrail Service
 resource "aws_cloudtrail" "audit_trail" {
   name                          = "clinicflow-audit-trail"
   s3_bucket_name                = aws_s3_bucket.cloudtrail_bucket.id
@@ -137,21 +176,17 @@ resource "aws_cloudtrail" "audit_trail" {
   is_multi_region_trail         = true
   enable_logging                = true
 
-  # NEW BLOCK: This enables the tripwire to "hear" S3 changes
   event_selector {
     read_write_type           = "All"
     include_management_events = true
-
     data_resource {
       type   = "AWS::S3::Object"
-      values = ["arn:aws:s3:::"] # Listen to all S3 objects/buckets
+      values = ["arn:aws:s3:::"] 
     }
   }
-
   depends_on = [aws_s3_bucket_policy.cloudtrail_policy]
 }
 
-# Add to security_automation.tf (Encrypting the Audit Trail)
 resource "aws_s3_bucket_server_side_encryption_configuration" "cloudtrail_encryption" {
   bucket = aws_s3_bucket.cloudtrail_bucket.id
   rule {
@@ -160,10 +195,9 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "cloudtrail_encryp
     }
   }
 }
+
 resource "aws_s3_bucket_logging" "cloudtrail_access_logging" {
   bucket = aws_s3_bucket.cloudtrail_bucket.id
-
-  # Sending logs to the central logging bucket you already provisioned
   target_bucket = aws_s3_bucket.clinicflow_logs.id
   target_prefix = "cloudtrail-access-logs/"
 }

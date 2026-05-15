@@ -3,7 +3,7 @@ data "aws_caller_identity" "current" {}
 # This bucket holds the Terraform State "Map"
 resource "aws_s3_bucket" "terraform_state" {
   bucket = "clinicflow-state-storage-${data.aws_caller_identity.current.account_id}"
-  
+
   # Prevent accidental deletion of this critical bucket
   lifecycle {
     prevent_destroy = true

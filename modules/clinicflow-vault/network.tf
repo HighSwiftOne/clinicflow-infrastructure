@@ -73,27 +73,6 @@ resource "aws_subnet" "private_b" {
 }
 
 # ==============================================================================
-# 4. THE MIDDLEMAN (NAT GATEWAY & ELASTIC IP)
-# ==============================================================================
-
-# The NAT Gateway needs a permanent, static Public IP to work
-resource "aws_eip" "nat_eip" {
-  domain = "vpc"
-}
-
-resource "aws_nat_gateway" "nat" {
-  allocation_id = aws_eip.nat_eip.id
-  subnet_id     = aws_subnet.public_a.id # Placed in the Lobby
-
-  # Brikman's Rule: Explicit dependency. Don't build NAT until IGW exists.
-  depends_on = [aws_internet_gateway.igw]
-
-  tags = {
-    Name = "ClinicFlow-NAT"
-  }
-}
-
-# ==============================================================================
 # 5. THE ROADMAP (ROUTE TABLES & ASSOCIATIONS)
 # ==============================================================================
 
@@ -111,14 +90,11 @@ resource "aws_route_table" "public_rt" {
   }
 }
 
-# Private Route Table (Points to NAT Gateway)
+# Private Route Table (Does NOT point to the internet)
 resource "aws_route_table" "private_rt" {
   vpc_id = aws_vpc.clinicflow_vpc.id
-
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat.id
-  }
+  
+  # No 0.0.0.0/0 route here! The vault is dark.
 
   tags = {
     Name = "ClinicFlow-Private-RT"
@@ -146,6 +122,42 @@ resource "aws_route_table_association" "private_b_assoc" {
   subnet_id      = aws_subnet.private_b.id
   route_table_id = aws_route_table.private_rt.id
 }
+
+# ==============================================================================
+# 6. FINOPS MASTER MOVE: THE S3 TUNNEL (VPC GATEWAY ENDPOINT)
+# ==============================================================================
+
+resource "aws_vpc_endpoint" "s3_private_link" {
+  vpc_id       = aws_vpc.clinicflow_vpc.id
+  service_name = "com.amazonaws.us-east-1.s3"
+  
+  vpc_endpoint_type = "Gateway"
+  route_table_ids   = [aws_route_table.private_rt.id]
+}
+
+# The Security Group for the Lambda (The Bouncer)
+resource "aws_security_group" "healer_sg" {
+  name        = "clinicflow-healer-sg"
+  description = "Strict egress-only access for the S3 Healer"
+  vpc_id      = aws_vpc.clinicflow_vpc.id
+
+  # Completely block all incoming traffic
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    self        = true
+  }
+
+  # Allow outbound traffic to S3 (HTTPS)
+  egress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 # The VPC Flow Log wire
 resource "aws_flow_log" "clinicflow_vpc_flow_log" {
   log_destination      = aws_s3_bucket.clinicflow_logs.arn
