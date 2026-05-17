@@ -1,25 +1,20 @@
-# ClinicFlow 1.0 - Production Alpha Version
-
+# 1. The Terraform Block (Must be closed!)
 terraform {
-  backend "s3" {
-    bucket         = "clinicflow-state-storage-541495491866" # The bucket from state_storage.tf
-    key            = "global/s3/terraform.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "clinicflow-state-locks"
-    encrypt        = true
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0" 
+    }
   }
-}
+} # <--- THIS is the bracket that is missing!
 
-# ... your existing provider and module blocks remain below ...
-
+# 2. The Provider Block
 provider "aws" {
   region = "us-east-1"
 }
 
-# Client 1: Your Pilot MedSpa
+# 3. Your Module Block
 module "pilot_medspa" {
   source = "./modules/clinicflow-vault"
-
-  client_name = "AlphaAesthetics"
-  environment = "Production"
+  # ... your other module variables stay the same
 }

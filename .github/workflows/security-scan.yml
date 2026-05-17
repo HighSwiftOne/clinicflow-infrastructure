@@ -21,15 +21,13 @@ jobs:
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          # Use the ARN you just generated
           role-to-assume: arn:aws:iam::541495491866:role/ClinicFlow-GitHub-Actions-Role
           aws-region: us-east-1
 
-      - name: Run Checkov Scan
+      - name: Run Checkov Scan (Hard Enforcement)
         uses: bridgecrewio/checkov-action@master
         with:
-          # Point this to your new module directory
           directory: modules/clinicflow-vault
           framework: terraform
-          soft_fail: true
-
+          # CHANGED: We now physically break the build on a security violation
+          soft_fail: false
