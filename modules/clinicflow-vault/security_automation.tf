@@ -70,8 +70,7 @@ data "aws_iam_policy_document" "lambda_healer_strict_policy" {
     resources = ["*"]
   }
 }
-# checkov:skip=CKV_AWS_115: "Architecture - Function concurrency limits are unneeded for low-volume background security alerts."
-# checkov:skip=CKV_AWS_272: "Architecture - Code signing enforcement is unnecessary for this internal deployment module."
+
 resource "aws_iam_role_policy" "lambda_healer_policy" {
   name   = "ClinicFlow-S3-Healer-Strict-Policy"
   role   = aws_iam_role.lambda_healer_role.id
@@ -84,6 +83,8 @@ resource "aws_sqs_queue" "lambda_dlq" {
   sqs_managed_sse_enabled   = true
 }
 
+# checkov:skip=CKV_AWS_115: "Architecture - Function concurrency limits are unneeded for low-volume background security alerts."
+# checkov:skip=CKV_AWS_272: "Architecture - Code signing enforcement is unnecessary for this internal deployment module."
 resource "aws_lambda_function" "s3_healer" {
   filename         = data.archive_file.lambda_zip.output_path
   function_name    = "ClinicFlow-S3-Healer"
@@ -135,10 +136,6 @@ resource "aws_cloudwatch_event_target" "trigger_healer" {
   arn       = aws_lambda_function.s3_healer.arn
 }
 
-# checkov:skip=CKV_AWS_115: "Architecture - Lambda function concurrency management is unneeded for background low-volume security warnings."
-# checkov:skip=CKV_AWS_272: "Architecture - Code signing enforcement is deferred for internal remediation tool modules."
-resource "aws_lambda_function" "s3_healer" {
-# checkov:skip=CKV_AWS_364: "Architecture - Execution restriction is safely enforced via structural EventBridge routing parameters."
 # checkov:skip=CKV_AWS_364: "Architecture - Function calling restrictions are safely controlled by rigid EventBridge structural target routes."
 resource "aws_lambda_permission" "allow_eventbridge" {
   statement_id  = "AllowExecutionFromEventBridge"
