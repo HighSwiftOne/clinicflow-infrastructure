@@ -30,7 +30,10 @@ resource "aws_iam_role" "lambda_healer_role" {
 # checkov:skip=CKV_AWS_111: "AWS requires * resource for ENI management in VPC Lambdas."
 # checkov:skip=CKV_AWS_356: "AWS requires * resource for ENI management and X-Ray tracing."
 data "aws_iam_policy_document" "lambda_healer_strict_policy" {
-# ... keep the rest of the block the same ...
+  # STATEMENT 1: CloudWatch Logging
+  statement 
+    sid       = "AllowCloudWatchLogging"
+    effect    = "Allow"
 
 data "aws_iam_policy_document" "lambda_healer_strict_policy" {
   # STATEMENT 1: CloudWatch Logging
