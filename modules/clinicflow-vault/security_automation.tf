@@ -1,6 +1,3 @@
-data "aws_region" "current" {}
-data "aws_caller_identity" "current" {}
-
 data "archive_file" "lambda_zip" {
   type        = "zip"
   source_file = "${path.module}/functions/heal_s3.py"
@@ -120,7 +117,7 @@ resource "aws_cloudwatch_event_rule" "s3_exposure_detector" {
     detail_type = ["AWS API Call via CloudTrail"],
     detail = {
       eventSource = ["s3.amazonaws.com"],
-      eventName = [
+      eventName   = [
         "PutBucketPublicAccessBlock",
         "DeleteBucketPublicAccessBlock",
         "PutBucketAcl",
