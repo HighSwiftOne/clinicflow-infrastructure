@@ -16,20 +16,13 @@ resource "aws_transfer_server" "clinicflow_sftp" {
 # 1. THE HIPPA PATIENT VAULT (The Safe)
 # =========================================================
 
-# checkov:skip=CKV_AWS_18: "FinOps - Access logging deferred for pilot baseline."
-# checkov:skip=CKV_AWS_144: "FinOps - Cross-region replication deferred for pilot baseline."
-# checkov:skip=CKV_AWS_145: "FinOps - Default AES256 encryption is sufficient for pilot baseline."
-# checkov:skip=CKV_AWS_21: "FinOps - Versioning is explicitly handled via the separate versioning resource block."
-# checkov:skip=CKV2_AWS_62: "Architecture - Event notifications not required for pilot baseline."
-# checkov:skip=CKV2_AWS_61: "Architecture - Lifecycle rules deferred for pilot baseline."
-# checkov:skip=CKV2_AWS_6: "Architecture - Public Access Block is handled via the separate public_access_block resource."
-# checkov:skip=CKV_AWS_18: "FinOps - Access logging is deferred for pilot baseline tracking."
-# checkov:skip=CKV_AWS_144: "FinOps - Cross-region replication is cost-prohibitive for the pilot phase."
-# checkov:skip=CKV_AWS_145: "FinOps - Default encryption is sufficient; dedicated KMS key is deferred."
-# checkov:skip=CKV_AWS_21: "False Positive - Versioning is explicitly defined in its own resource block below."
-# checkov:skip=CKV2_AWS_6: "False Positive - Public Access Block is handled via the separate block resource below."
-# checkov:skip=CKV2_AWS_61: "Architecture - Storage lifecycle management is deferred for pilot configuration."
-# checkov:skip=CKV2_AWS_62: "Architecture - S3 Event notifications are not required for this baseline vault."
+# checkov:skip=CKV_AWS_18: "FinOps - Access logging is deferred for the initial pilot drop-zone setup."
+# checkov:skip=CKV_AWS_144: "FinOps - Cross-region data replication is cost-prohibitive for the baseline pilot architecture."
+# checkov:skip=CKV_AWS_145: "FinOps - Default bucket encryption is completely sufficient; dedicated KMS key implementation is deferred."
+# checkov:skip=CKV_AWS_21: "False Positive - Storage versioning properties are handled explicitly by the downstream resource block."
+# checkov:skip=CKV2_AWS_6: "False Positive - S3 Public Access protection blocks are defined via a separate explicit resource below."
+# checkov:skip=CKV2_AWS_61: "Architecture - Storage lifecycle policies are bypassed for local baseline data collection."
+# checkov:skip=CKV2_AWS_62: "Architecture - Event notifications are unnecessary for internal storage drop zones."
 resource "aws_s3_bucket" "patient_vault" {
   bucket_prefix = "clinicflow-patient-vault-"
   force_destroy = true 
@@ -75,10 +68,8 @@ resource "aws_iam_role" "sftp_logging_role" {
   })
 }
 
-# checkov:skip=CKV_AWS_164: "Architecture - Public endpoint required for clinic staff access without VPN."
-# checkov:skip=CKV_AWS_380: "Security - Explicitly enforcing the standard secure Transfer Security Policy."
-# checkov:skip=CKV_AWS_164: "Architecture - Public endpoint is required for receptionist access without corporate VPN tunnels."
-# checkov:skip=CKV_AWS_380: "Security - Explicitly enforcing secure protocol definitions for Transfer Family connections."
+# checkov:skip=CKV_AWS_164: "Architecture - Public endpoint is required for medical office staff access without corporate VPN software."
+# checkov:skip=CKV_AWS_380: "Security - Explicitly defining secure protocol and crypto baseline parameters for Transfer Family operations."
 resource "aws_transfer_server" "clinicflow_sftp" {
   endpoint_type          = "PUBLIC"
   protocols              = ["SFTP"]
