@@ -16,4 +16,61 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-# ... keep the rest of the file exactly the same ...
+  # ---------------------------------------------------------
+  # STAGE 1: SECURITY & PLANNING (The Bouncer)
+  # ---------------------------------------------------------
+  security-and-plan:
+    name: Security Scan & Plan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::541495491866:role/ClinicFlow-GitHub-Actions-Role
+          aws-region: us-east-1
+
+      - name: vCISO Checkov Scan (Hard Enforcement)
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          framework: terraform
+          soft_fail: false # Breaking the build on HIPAA violations
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+  # ---------------------------------------------------------
+  # STAGE 2: AUTOMATED DEPLOYMENT (The Builder)
+  # ---------------------------------------------------------
+  deploy:
+    name: Deploy Infrastructure
+    needs: security-and-plan
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::541495491866:role/ClinicFlow-GitHub-Actions-Role
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
