@@ -1,21 +1,3 @@
-# checkov:skip=CKV_AWS_164: "Architecture - Public endpoint required for clinic staff access without VPN."
-resource "aws_transfer_server" "clinicflow_sftp" {
-  endpoint_type          = "PUBLIC"
-  protocols              = ["SFTP"]
-  identity_provider_type = "SERVICE_MANAGED"
-  logging_role           = aws_iam_role.sftp_logging_role.arn
-  # CRITICAL UPDATE: Enforce the latest security policy
-  security_policy_name   = "TransferSecurityPolicy-2024-01" 
-
-  tags = {
-    Name = "ClinicFlow-Front-Door"
-  }
-}
-
-# =========================================================
-# 1. THE HIPPA PATIENT VAULT (The Safe)
-# =========================================================
-
 # checkov:skip=CKV_AWS_18: "FinOps - Access logging is deferred for the initial pilot drop-zone setup."
 # checkov:skip=CKV_AWS_144: "FinOps - Cross-region data replication is cost-prohibitive for the baseline pilot architecture."
 # checkov:skip=CKV_AWS_145: "FinOps - Default bucket encryption is completely sufficient; dedicated KMS key implementation is deferred."
@@ -27,16 +9,7 @@ resource "aws_s3_bucket" "patient_vault" {
   bucket_prefix = "clinicflow-patient-vault-"
   force_destroy = true 
 }
-  bucket_prefix = "clinicflow-patient-vault-"
-  force_destroy = true # For lab/pilot purposes
 
-resource "aws_s3_bucket" "patient_vault" {
-  bucket_prefix = "clinicflow-patient-vault-"
-  force_destroy = true # For lab/pilot purposes
-}
-
-# WORM Compliance (Write Once, Read Many). 
-# This is what protects them from Ransomware and Auditors.
 resource "aws_s3_bucket_versioning" "patient_vault_versioning" {
   bucket = aws_s3_bucket.patient_vault.id
   versioning_configuration {
@@ -52,10 +25,6 @@ resource "aws_s3_bucket_public_access_block" "patient_vault_block" {
   restrict_public_buckets = true
 }
 
-# =========================================================
-# 2. THE SFTP FRONT DOOR (AWS Transfer Family)
-# =========================================================
-# The server needs a role just so it can write access logs to CloudWatch
 resource "aws_iam_role" "sftp_logging_role" {
   name = "ClinicFlow-SFTP-Logging-Role"
   assume_role_policy = jsonencode({
@@ -66,6 +35,11 @@ resource "aws_iam_role" "sftp_logging_role" {
       Principal = { Service = "transfer.amazonaws.com" }
     }]
   })
+}
+
+resource "aws_iam_role_policy_attachment" "sftp_logging_attach" {
+  role       = aws_iam_role.sftp_logging_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSTransferLoggingAccess"
 }
 
 # checkov:skip=CKV_AWS_164: "Architecture - Public endpoint is required for medical office staff access without corporate VPN software."
@@ -81,20 +55,7 @@ resource "aws_transfer_server" "clinicflow_sftp" {
     Name = "ClinicFlow-Front-Door"
   }
 }
-resource "aws_transfer_server" "clinicflow_sftp" {
-  endpoint_type          = "PUBLIC"
-  protocols              = ["SFTP"]
-  identity_provider_type = "SERVICE_MANAGED"
-  logging_role           = aws_iam_role.sftp_logging_role.arn
 
-  tags = {
-    Name = "ClinicFlow-Front-Door"
-  }
-}
-
-# =========================================================
-# 3. THE RECEPTIONIST's SECURITY BADGE (IAM Role)
-# =========================================================
 resource "aws_iam_role" "receptionist_sftp_role" {
   name = "ClinicFlow-Receptionist-SFTP"
   assume_role_policy = jsonencode({
@@ -107,13 +68,12 @@ resource "aws_iam_role" "receptionist_sftp_role" {
   })
 }
 
-# Strict S3 Permissions - They can only touch their specific vault
 resource "aws_iam_role_policy" "receptionist_s3_access" {
-  name = "ClinicFlow-Receptionist-S3-Policy"
+  name "ClinicFlow-Receptionist-S3-Policy"
   role = aws_iam_role.receptionist_sftp_role.id
 
   policy = jsonencode({
-    Version = "2012-10-17",
+    Version = "2012-10-17"
     Statement = [
       {
         Sid    = "AllowListingOfVault"
@@ -139,13 +99,9 @@ resource "aws_iam_role_policy" "receptionist_s3_access" {
   })
 }
 
-# =========================================================
-# 4. THE USER ACCOUNT (The Cyberduck Login)
-# =========================================================
 resource "aws_transfer_user" "frontdesk_user" {
   server_id      = aws_transfer_server.clinicflow_sftp.id
   user_name      = "frontdesk"
   role           = aws_iam_role.receptionist_sftp_role.arn
-  # This mathematically locks the user into this specific folder. They cannot traverse up.
   home_directory = "/${aws_s3_bucket.patient_vault.id}/"
 }
