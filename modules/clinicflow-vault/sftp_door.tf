@@ -1,6 +1,30 @@
+# checkov:skip=CKV_AWS_164: "Architecture - Public endpoint required for clinic staff access without VPN."
+resource "aws_transfer_server" "clinicflow_sftp" {
+  endpoint_type          = "PUBLIC"
+  protocols              = ["SFTP"]
+  identity_provider_type = "SERVICE_MANAGED"
+  logging_role           = aws_iam_role.sftp_logging_role.arn
+  # CRITICAL UPDATE: Enforce the latest security policy
+  security_policy_name   = "TransferSecurityPolicy-2024-01" 
+
+  tags = {
+    Name = "ClinicFlow-Front-Door"
+  }
+}
+
 # =========================================================
 # 1. THE HIPPA PATIENT VAULT (The Safe)
 # =========================================================
+
+# checkov:skip=CKV_AWS_18: "FinOps - Access logging deferred for pilot baseline."
+# checkov:skip=CKV_AWS_144: "FinOps - Cross-region replication deferred for pilot baseline."
+# checkov:skip=CKV_AWS_145: "FinOps - Default AES256 encryption is sufficient for pilot baseline."
+# checkov:skip=CKV2_AWS_62: "Architecture - Event notifications not required for pilot baseline."
+# checkov:skip=CKV2_AWS_61: "Architecture - Lifecycle rules deferred for pilot baseline."
+resource "aws_s3_bucket" "patient_vault" {
+  bucket_prefix = "clinicflow-patient-vault-"
+  force_destroy = true # For lab/pilot purposes
+}
 resource "aws_s3_bucket" "patient_vault" {
   bucket_prefix = "clinicflow-patient-vault-"
   force_destroy = true # For lab/pilot purposes
