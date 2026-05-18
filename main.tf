@@ -18,3 +18,4 @@ module "pilot_medspa" {
   source = "./modules/clinicflow-vault"
   # ... your other module variables stay the same
 }# Force pipeline sync baseline
+# Force validation pipeline sync
