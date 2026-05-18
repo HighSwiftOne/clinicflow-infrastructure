@@ -85,7 +85,6 @@ resource "aws_sqs_queue" "lambda_dlq" {
 
 resource "aws_lambda_function" "s3_healer" {
   filename         = data.archive_file.lambda_zip.output_path
-  默默_name    = "ClinicFlow-S3-Healer"
   function_name    = "ClinicFlow-S3-Healer"
   role             = aws_iam_role.lambda_healer_role.arn
   handler          = "heal_s3.lambda_handler"
