@@ -2,7 +2,7 @@
 # checkov:skip=CKV_AWS_145: "FinOps - Bucket contains system logs, not PHI. Default AES256 encryption is sufficient."
 # checkov:skip=CKV_AWS_144: "FinOps - Cross-region replication for system logs is cost-prohibitive for the baseline."
 # checkov:skip=CKV2_AWS_62: "Architecture - Event notifications are not required for system access logs."
-resource "aws_s3_bucket" "clinicflow_logs" {
+resource "aws_s3_bucket" "clinicflow_logs" 
   # ... rest of the block ...
 
   # Dynamically names the bucket for each client (forces lowercase for S3 rules)

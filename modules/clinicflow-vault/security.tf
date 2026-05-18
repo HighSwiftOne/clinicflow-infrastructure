@@ -1,4 +1,5 @@
-# --- Web Tier Security Group (The Front Door) ---
+# checkov:skip=CKV_AWS_260: "Architecture - Port 80 is strictly required to forcefully redirect HTTP to HTTPS."
+# checkov:skip=CKV_AWS_382: "Architecture - The ALB requires unrestricted egress to reach the dynamic IPs of the Auto Scaling Group."
 resource "aws_security_group" "web_sg" {
   name        = "ClinicFlow-Web-SG"
   description = "Allow inbound HTTP/HTTPS traffic from the internet" # <-- Change this line back!

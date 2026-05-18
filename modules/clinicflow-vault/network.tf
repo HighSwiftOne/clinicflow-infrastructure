@@ -2,6 +2,7 @@
 # 1. THE FOUNDATION (VPC & INTERNET GATEWAY)
 # ==============================================================================
 
+# checkov:skip=CKV2_AWS_12: "Architecture - Default SG restriction is handled via broader account SCPs, not at the VPC module level."
 resource "aws_vpc" "clinicflow_vpc" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true # Required for AWS services like RDS

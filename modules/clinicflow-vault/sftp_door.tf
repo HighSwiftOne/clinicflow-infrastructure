@@ -29,7 +29,7 @@ resource "aws_s3_bucket" "patient_vault" {
 }
   bucket_prefix = "clinicflow-patient-vault-"
   force_destroy = true # For lab/pilot purposes
-}
+
 resource "aws_s3_bucket" "patient_vault" {
   bucket_prefix = "clinicflow-patient-vault-"
   force_destroy = true # For lab/pilot purposes
