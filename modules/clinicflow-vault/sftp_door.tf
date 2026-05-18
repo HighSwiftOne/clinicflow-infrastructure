@@ -69,7 +69,7 @@ resource "aws_iam_role" "receptionist_sftp_role" {
 }
 
 resource "aws_iam_role_policy" "receptionist_s3_access" {
-  name "ClinicFlow-Receptionist-S3-Policy"
+  name = "ClinicFlow-Receptionist-S3-Policy"
   role = aws_iam_role.receptionist_sftp_role.id
 
   policy = jsonencode({
