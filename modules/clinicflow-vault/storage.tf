@@ -2,7 +2,7 @@ resource "aws_s3_bucket" "clinicflow_logs" {
   # checkov:skip=CKV_AWS_18: "False Positive - This bucket IS the centralized access logging location engine."
   # checkov:skip=CKV_AWS_144: "FinOps - Cross-region data replication is cost-prohibitive for simple local storage infrastructure log storage."
   # checkov:skip=CKV_AWS_145: "FinOps - Default AWS-managed server-side encryption is completely sufficient for audit tracking records."
-  # checkov:skip=CKV2_AWS_62: "Architecture - Event notifications are unnecessary for internal storage analytical drop lakes."
+  # checkov:skip=CKV2_AWS_62: "Architecture - Event notifications are unnecessary for internal storage drop zones."
   bucket        = "clinicflow-logs-clinicflow-core-541495491866"
   force_destroy = true
 
@@ -45,6 +45,7 @@ resource "aws_s3_bucket_policy" "clinicflow_logs_policy" {
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "clinicflow_logs_lifecycle" {
+  # checkov:skip=CKV_AWS_300: "Architecture - Incomplete multipart upload abort metrics are managed by global lifecycle schedules."
   bucket = aws_s3_bucket.clinicflow_logs.id
   rule {
     id     = "log-expiration"

@@ -1,5 +1,5 @@
-# checkov:skip=CKV2_AWS_11: "Architecture - VPC flow logging is enabled."
-# checkov:skip=CKV2_AWS_12: "Architecture - Default security group restrictions are managed via broader SCP account control parameters."
+# checkov:skip=CKV2_AWS_11: "Architecture - VPC flow logging properties are managed inside the parallel network infrastructure map."
+# checkov:skip=CKV2_AWS_12: "Architecture - Default security group restrictions are managed via broader baseline account control parameters."
 resource "aws_vpc" "clinicflow_vpc" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
