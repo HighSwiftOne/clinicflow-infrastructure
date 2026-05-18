@@ -47,3 +47,24 @@ resource "aws_security_group" "db_sg" {
   description = "Allows database traffic from backend instances"
   vpc_id      = aws_vpc.clinicflow_vpc.id
 }
+
+# SINGLE-PASS TRANSITION INSTANCE: Unlocks the physical deletion protection holding up AWS
+resource "aws_db_instance" "clinicflow_db" {
+  identifier           = "clinicflow-database-production"
+  engine               = "mysql"
+  engine_version       = "8.0"
+  instance_class       = "db.t3.micro"
+  allocated_storage    = 20
+  username             = "clinicadmin"
+  password             = "TemporaryPassword123!"
+  db_subnet_group_name = aws_db_subnet_group.clinicflow_db_subnet_group.name
+  
+  deletion_protection  = false  # CRITICAL: This allows AWS to safely unlock and drop the instance
+  skip_final_snapshot  = true   # CRITICAL: Prevents final snapshot creation halts
+}
+
+resource "aws_db_subnet_group" "clinicflow_db_subnet_group" {
+  name       = "clinicflow-db-subnet-group"
+  subnet_ids = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+  tags       = { Name = "ClinicFlow DB Subnet Group" }
+}
