@@ -30,6 +30,8 @@ resource "aws_iam_role" "github_actions_role" {
 }
 
 # checkov:skip=CKV_AWS_274: "Architecture - Provisioning pipeline requires administrative access to build out AWS infrastructure modules."
+# checkov:skip=CKV_AWS_274: "Architecture - Provisioning pipeline requires administrative rights to build core cloud resources."
+resource "aws_iam_role_policy_attachment" "admin_access" {
 resource "aws_iam_role_policy_attachment" "admin_access" {
   role       = aws_iam_role.github_actions_role.name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
