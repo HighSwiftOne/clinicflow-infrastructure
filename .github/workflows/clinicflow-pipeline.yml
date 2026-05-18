@@ -1,0 +1,19 @@
+name: ClinicFlow Production Vending Machine
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+# The Keyless Identity Tunnel
+permissions:
+  id-token: write 
+  contents: read
+
+# Silences the Node.js deprecation warning and future-proofs the runner
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+# ... keep the rest of the file exactly the same ...
