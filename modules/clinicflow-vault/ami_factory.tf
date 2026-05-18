@@ -1,18 +1,20 @@
 # --- Phase 1: The Identity Shield ---
 resource "aws_iam_policy" "image_builder_boundary" {
   name        = "ClinicFlow-ImageBuilder-Boundary"
-  description = "Ensures the factory can only touch specific resources"
+  description = "Strict boundary to prevent privilege escalation during AMI builds"
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Action   = ["ec2:Describe*"]
+        # Checkov Fix: Replaced * resource with explicit Region/Account limits where possible.
+        # Note: Some EC2 describe actions strictly require * in AWS.
+        Action   = ["ec2:DescribeImages", "ec2:DescribeSnapshots"]
         Effect   = "Allow"
         Resource = "*"
       },
       {
-        Action = ["s3:Get*", "s3:List*"]
+        Action = ["s3:GetObject", "s3:ListBucket"]
         Effect = "Allow"
         Resource = [
           "arn:aws:s3:::clinicflow-*",
