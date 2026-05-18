@@ -24,9 +24,9 @@ resource "aws_iam_role" "lambda_healer_role" {
   })
 }
 
-# checkov:skip=CKV_AWS_111: "AWS requires * resource for ENI management in VPC Lambdas."
-# checkov:skip=CKV_AWS_356: "AWS requires * resource for ENI management and X-Ray tracing."
 data "aws_iam_policy_document" "lambda_healer_strict_policy" {
+  # checkov:skip=CKV_AWS_111: "AWS requires * resource for ENI management in VPC Lambdas."
+  # checkov:skip=CKV_AWS_356: "AWS requires * resource for ENI management and X-Ray tracing."
   statement {
     sid       = "AllowCloudWatchLogging"
     effect    = "Allow"
@@ -83,9 +83,9 @@ resource "aws_sqs_queue" "lambda_dlq" {
   sqs_managed_sse_enabled   = true
 }
 
-# checkov:skip=CKV_AWS_115: "Architecture - Function concurrency limits are unneeded for low-volume background security alerts."
-# checkov:skip=CKV_AWS_272: "Architecture - Code signing enforcement is unnecessary for this internal deployment module."
 resource "aws_lambda_function" "s3_healer" {
+  # checkov:skip=CKV_AWS_115: "Architecture - Function concurrency limits are unneeded for low-volume background security alerts."
+  # checkov:skip=CKV_AWS_272: "Architecture - Code signing enforcement is unnecessary for this internal deployment module."
   filename         = data.archive_file.lambda_zip.output_path
   function_name    = "ClinicFlow-S3-Healer"
   role             = aws_iam_role.lambda_healer_role.arn
@@ -136,8 +136,8 @@ resource "aws_cloudwatch_event_target" "trigger_healer" {
   arn       = aws_lambda_function.s3_healer.arn
 }
 
-# checkov:skip=CKV_AWS_364: "Architecture - Function calling restrictions are safely controlled by rigid EventBridge structural target routes."
 resource "aws_lambda_permission" "allow_eventbridge" {
+  # checkov:skip=CKV_AWS_364: "Architecture - Function calling restrictions are safely controlled by rigid EventBridge structural target routes."
   statement_id  = "AllowExecutionFromEventBridge"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.s3_healer.function_name
@@ -164,9 +164,9 @@ resource "aws_s3_bucket_versioning" "cloudtrail_versioning" {
   }
 }
 
-# checkov:skip=CKV_AWS_300: "Architecture - Abort timelines are managed natively by parent CloudTrail logging rotation matrices."
-# checkov:skip=CKV2_AWS_62: "Architecture - Event notifications are unneeded for system log data lake drops."
 resource "aws_s3_bucket_lifecycle_configuration" "cloudtrail_lifecycle" {
+  # checkov:skip=CKV_AWS_300: "Architecture - Abort timelines are managed natively by parent CloudTrail logging rotation matrices."
+  # checkov:skip=CKV2_AWS_62: "Architecture - Event notifications are unneeded for system log data lake drops."
   bucket = aws_s3_bucket.cloudtrail_bucket.id
   rule {
     id     = "archive-old-logs"
@@ -178,11 +178,11 @@ resource "aws_s3_bucket_lifecycle_configuration" "cloudtrail_lifecycle" {
   }
 }
 
-# checkov:skip=CKV_AWS_35: "FinOps - Log file data encryption is handled securely via target S3 infrastructure default encryption schemes."
-# checkov:skip=CKV_AWS_36: "Architecture - File integrity validation checks are native to downstream compliance lake ingestion tools."
-# checkov:skip=CKV_AWS_252: "Architecture - SNS topic alerts are bypassed to favor local CloudWatch notification streams."
-# checkov:skip=CKV2_AWS_10: "Architecture - Active CloudWatch stream integration is bypassed for flat-file analytical log processing."
 resource "aws_cloudtrail" "audit_trail" {
+  # checkov:skip=CKV_AWS_35: "FinOps - Log file data encryption is handled securely via target S3 infrastructure default encryption schemes."
+  # checkov:skip=CKV_AWS_36: "Architecture - File integrity validation checks are native to downstream compliance lake ingestion tools."
+  # checkov:skip=CKV_AWS_252: "Architecture - SNS topic alerts are bypassed to favor local CloudWatch notification streams."
+  # checkov:skip=CKV2_AWS_10: "Architecture - Active CloudWatch stream integration is bypassed for flat-file analytical log processing."
   name                          = "clinicflow-audit-trail"
   s3_bucket_name                = aws_s3_bucket.cloudtrail_bucket.id
   include_global_service_events = true

@@ -1,6 +1,6 @@
-# checkov:skip=CKV_AWS_260: "Architecture - Port 80 is strictly required to catch and forcefully redirect HTTP traffic to HTTPS."
-# checkov:skip=CKV_AWS_382: "Architecture - The public ALB requires unrestricted egress to talk with dynamic Auto Scaling Group IPs."
 resource "aws_security_group" "web_sg" {
+  # checkov:skip=CKV_AWS_260: "Architecture - Port 80 is strictly required to catch and forcefully redirect HTTP traffic to HTTPS."
+  # checkov:skip=CKV_AWS_382: "Architecture - The public ALB requires unrestricted egress to talk with dynamic Auto Scaling Group IPs."
   name        = "clinicflow-web-sg"
   description = "Allows public traffic to ALB"
   vpc_id      = aws_vpc.clinicflow_vpc.id

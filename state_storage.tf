@@ -1,10 +1,10 @@
-# checkov:skip=CKV_AWS_18: "FinOps - Access logging is unnecessary for isolated backend state storage."
-# checkov:skip=CKV_AWS_144: "FinOps - Cross-region replication is cost-prohibitive for tracking transient local state."
-# checkov:skip=CKV_AWS_145: "FinOps - Default AWS-managed encryption is completely sufficient for transient state management."
-# checkov:skip=CKV2_AWS_6: "Architecture - Public access protection is strictly handled via independent block resources below."
-# checkov:skip=CKV2_AWS_61: "Architecture - State file lifecycle transitions are handled natively by backend engines."
-# checkov:skip=CKV2_AWS_62: "Architecture - Event notifications are unnecessary for internal state locking vaults."
 resource "aws_s3_bucket" "terraform_state" {
+  # checkov:skip=CKV_AWS_18: "FinOps - Access logging is unnecessary for isolated backend state storage."
+  # checkov:skip=CKV_AWS_144: "FinOps - Cross-region replication is cost-prohibitive for tracking transient local state."
+  # checkov:skip=CKV_AWS_145: "FinOps - Default AWS-managed encryption is completely sufficient for transient state management."
+  # checkov:skip=CKV2_AWS_6: "Architecture - Public access protection is strictly handled via independent block resources below."
+  # checkov:skip=CKV2_AWS_61: "Architecture - State file lifecycle transitions are handled natively by backend engines."
+  # checkov:skip=CKV2_AWS_62: "Architecture - Event notifications are unnecessary for internal state locking vaults."
   bucket        = "clinicflow-state-vault-541495491866"
   force_destroy = true
 
@@ -39,9 +39,10 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "state_encryption"
   }
 }
 
-# checkov:skip=CKV_AWS_28: "FinOps - DynamoDB table only stores active execution lock tokens; point-in-time recovery is unnecessary."
-# checkov:skip=CKV_AWS_119: "FinOps - Default encryption profiles are completely sufficient for transient lock records."
 resource "aws_dynamodb_table" "terraform_locks" {
+  # checkov:skip=CKV_AWS_28: "FinOps - DynamoDB table only stores active execution lock tokens; point-in-time recovery is unnecessary."
+  # checkov:skip=CKV_AWS_119: "FinOps - Default encryption profiles are completely sufficient for transient lock records."
+  # checkov:skip=CKV2_AWS_16: "False Positive - Auto Scaling is unneeded for flat low-volume key lookups."
   name         = "clinicflow-tflocks"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LockID"

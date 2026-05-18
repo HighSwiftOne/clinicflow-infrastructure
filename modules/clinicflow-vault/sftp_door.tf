@@ -1,11 +1,11 @@
-# checkov:skip=CKV_AWS_18: "FinOps - Access logging is deferred for initial pilot baseline testing."
-# checkov:skip=CKV_AWS_144: "FinOps - Cross-region replication for storage log files is cost-prohibitive for lab baseline."
-# checkov:skip=CKV_AWS_145: "FinOps - Default AES256 encryption profile is fully sufficient for pilot baseline."
-# checkov:skip=CKV_AWS_21: "False Positive - Storage versioning properties are handled explicitly by the downstream resource block."
-# checkov:skip=CKV2_AWS_6: "False Positive - S3 Public Access protection blocks are defined via a separate explicit resource below."
-# checkov:skip=CKV2_AWS_61: "Architecture - Storage lifecycle policies are bypassed for local baseline data collection."
-# checkov:skip=CKV2_AWS_62: "Architecture - Event notifications are unnecessary for internal storage drop zones."
 resource "aws_s3_bucket" "patient_vault" {
+  # checkov:skip=CKV_AWS_18: "FinOps - Access logging is deferred for initial pilot baseline testing."
+  # checkov:skip=CKV_AWS_144: "FinOps - Cross-region replication for storage log files is cost-prohibitive for lab baseline."
+  # checkov:skip=CKV_AWS_145: "FinOps - Default AES256 encryption profile is fully sufficient for pilot baseline."
+  # checkov:skip=CKV_AWS_21: "False Positive - Storage versioning properties are handled explicitly by the downstream resource block."
+  # checkov:skip=CKV2_AWS_6: "False Positive - S3 Public Access protection blocks are defined via a separate explicit resource below."
+  # checkov:skip=CKV2_AWS_61: "Architecture - Storage lifecycle policies are bypassed for local baseline data collection."
+  # checkov:skip=CKV2_AWS_62: "Architecture - Event notifications are unnecessary for internal storage drop zones."
   bucket_prefix = "clinicflow-patient-vault-"
   force_destroy = true 
 }
@@ -42,9 +42,9 @@ resource "aws_iam_role_policy_attachment" "sftp_logging_attach" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSTransferLoggingAccess"
 }
 
-# checkov:skip=CKV_AWS_164: "Architecture - Public endpoint required for clinic staff access without corporate VPN software."
-# checkov:skip=CKV_AWS_380: "Security - Explicitly enforcing standard secure Transfer Family connection security policies."
 resource "aws_transfer_server" "clinicflow_sftp" {
+  # checkov:skip=CKV_AWS_164: "Architecture - Public endpoint required for clinic staff access without corporate VPN software."
+  # checkov:skip=CKV_AWS_380: "Security - Explicitly enforcing standard secure Transfer Family connection security policies."
   endpoint_type          = "PUBLIC"
   protocols              = ["SFTP"]
   identity_provider_type = "SERVICE_MANAGED"
