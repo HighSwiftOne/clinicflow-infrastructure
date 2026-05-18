@@ -1,80 +1,93 @@
-# 1. Grab your dynamic AWS Account ID
-data "aws_caller_identity" "current" {}
+resource "aws_vpc" "clinicflow_vpc" {
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  tags                 = { Name = "ClinicFlow-VPC" }
+}
 
-# 2. The KMS Padlock (Encryption at Rest)
-resource "aws_kms_key" "clinicflow_db_key" {
-  description             = "KMS key for ClinicFlow RDS encryption"
-  deletion_window_in_days = 7
-  enable_key_rotation     = true
+resource "aws_subnet" "public_a" {
+  vpc_id            = aws_vpc.clinicflow_vpc.id
+  cidr_block        = "10.0.1.0/24"
+  availability_zone = "us-east-1a"
+}
 
-  tags = {
-    Name = "ClinicFlow-KMS"
+resource "aws_subnet" "public_b" {
+  vpc_id            = aws_vpc.clinicflow_vpc.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "us-east-1b"
+}
+
+resource "aws_subnet" "private_a" {
+  vpc_id            = aws_vpc.clinicflow_vpc.id
+  cidr_block        = "10.0.3.0/24"
+  availability_zone = "us-east-1a"
+}
+
+resource "aws_subnet" "private_b" {
+  vpc_id            = aws_vpc.clinicflow_vpc.id
+  cidr_block        = "10.0.4.0/24"
+  availability_zone = "us-east-1b"
+}
+
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.clinicflow_vpc.id
+}
+
+resource "aws_route_table" "public_rt" {
+  vpc_id = aws_vpc.clinicflow_vpc.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
   }
 }
 
-# 3. The Strict KMS Policy (Who holds the key)
-resource "aws_kms_key_policy" "clinicflow_db_key_policy" {
-  key_id = aws_kms_key.clinicflow_db_key.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid    = "Enable IAM User Permissions"
-        Effect = "Allow"
-        Principal = {
-          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
-        }
-        Action   = "kms:*"
-        Resource = "*"
-      }
-    ]
-  })
+resource "aws_route_table_association" "public_a_assoc" {
+  subnet_id      = aws_subnet.public_a.id
+  route_table_id = aws_route_table.public_rt.id
 }
 
-# 4. The Private Subnet Routing
-resource "aws_db_subnet_group" "clinicflow_db_subnet_group" {
-  name       = "clinicflow-db-subnet-group"
-  subnet_ids = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+resource "aws_route_table_association" "public_b_assoc" {
+  subnet_id      = aws_subnet.public_b.id
+  route_table_id = aws_route_table.public_rt.id
+}
 
-  tags = {
-    Name = "ClinicFlow DB Subnet Group"
+resource "aws_route_table" "private_rt" {
+  vpc_id = aws_vpc.clinicflow_vpc.id
+}
+
+resource "aws_route_table_association" "private_a_assoc" {
+  subnet_id      = aws_subnet.private_a.id
+  route_table_id = aws_route_table.private_rt.id
+}
+
+resource "aws_route_table_association" "private_b_assoc" {
+  subnet_id      = aws_subnet.private_b.id
+  route_table_id = aws_route_table.private_rt.id
+}
+
+resource "aws_vpc_endpoint" "s3_private_link" {
+  vpc_id       = aws_vpc.clinicflow_vpc.id
+  service_name = "com.amazonaws.us-east-1.s3"
+}
+
+# checkov:skip=CKV_AWS_23: "False Positive - Description is provided."
+# checkov:skip=CKV2_AWS_5: "False Positive - SG is attached to the Lambda function via vpc_config."
+resource "aws_security_group" "healer_sg" {
+  name        = "clinicflow-healer-sg"
+  description = "Security group for compliance lambda"
+  vpc_id      = aws_vpc.clinicflow_vpc.id
+
+  egress {
+    description = "Allow outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
-# checkov:skip=CKV_AWS_293:Lab Environment - Deletion protection blocks 'terraform destroy'.
-# checkov:skip=CKV_AWS_118:FinOps - Enhanced monitoring incurs additional CloudWatch costs.
-# checkov:skip=CKV_AWS_118: "FinOps - Enhanced monitoring incurs heavy CloudWatch costs. Standard metrics are sufficient for baseline."
-resource "aws_db_instance" "clinicflow_db" {
 
-# 5. The MedSpa Data Vault
-resource "aws_db_instance" "clinicflow_db" {
-  identifier          = "clinicflow-database-production"
-  engine              = "mysql"
-  engine_version      = "8.0"
-  instance_class      = "db.t3.micro"
-  allocated_storage   = 20
-  deletion_protection = true
-
-  username = "clinicadmin"
-  password = "SuperSecretPassword123!"
-
-  multi_az = true
-
-  db_subnet_group_name   = aws_db_subnet_group.clinicflow_db_subnet_group.name
-  vpc_security_group_ids = [aws_security_group.db_sg.id]
-
-  publicly_accessible = false
-  skip_final_snapshot = true
-
-  enabled_cloudwatch_logs_exports = ["audit", "error", "general", "slowquery"]
-
-  # --- THE HIPAA UPGRADES ---
-  storage_encrypted                   = true
-  kms_key_id                          = aws_kms_key.clinicflow_db_key.arn
-  iam_database_authentication_enabled = true
-  auto_minor_version_upgrade          = true
-  copy_tags_to_snapshot               = true
-
-  tags = {
-    Name = "ClinicFlow-Production-DB"
-  }
+resource "aws_security_group" "db_sg" {
+  name        = "clinicflow-db-sg"
+  description = "Allows database traffic from backend instances"
+  vpc_id      = aws_vpc.clinicflow_vpc.id
 }
