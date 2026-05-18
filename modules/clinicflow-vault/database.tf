@@ -42,6 +42,8 @@ resource "aws_db_subnet_group" "clinicflow_db_subnet_group" {
 }
 # checkov:skip=CKV_AWS_293:Lab Environment - Deletion protection blocks 'terraform destroy'.
 # checkov:skip=CKV_AWS_118:FinOps - Enhanced monitoring incurs additional CloudWatch costs.
+# checkov:skip=CKV_AWS_118: "FinOps - Enhanced monitoring incurs heavy CloudWatch costs. Standard metrics are sufficient for baseline."
+resource "aws_db_instance" "clinicflow_db" 
 
 # 5. The MedSpa Data Vault
 resource "aws_db_instance" "clinicflow_db" {

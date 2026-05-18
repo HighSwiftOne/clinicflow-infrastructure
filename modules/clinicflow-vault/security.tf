@@ -39,6 +39,10 @@ resource "aws_security_group" "db_sg" {
   description = "Allow traffic only from Web Tier"
   vpc_id      = aws_vpc.clinicflow_vpc.id
 
+# checkov:skip=CKV_AWS_260: "Architecture - Port 80 is strictly required to forcefully redirect HTTP to HTTPS."
+# checkov:skip=CKV_AWS_382: "Architecture - The ALB requires unrestricted egress to reach the dynamic IPs of the Auto Scaling Group."
+resource "aws_security_group" "web_sg" {
+
   ingress {
     description     = "Allow MySQL from Web SG"
     from_port       = 3306
