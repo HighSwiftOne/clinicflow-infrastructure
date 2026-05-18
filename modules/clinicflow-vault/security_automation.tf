@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current" {}
+
 data "archive_file" "lambda_zip" {
   type        = "zip"
   source_file = "${path.module}/functions/heal_s3.py"
@@ -171,6 +173,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "cloudtrail_lifecycle" {
   rule {
     id     = "archive-old-logs"
     status = "Enabled"
+    
+    filter {}
+
     transition {
       days          = 90
       storage_class = "STANDARD_IA"
@@ -197,7 +202,6 @@ resource "aws_cloudtrail" "audit_trail" {
       values = ["arn:aws:s3:::"]
     }
   }
-  depends_on = [aws_s3_bucket_policy.cloudtrail_policy]
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "cloudtrail_encryption" {
