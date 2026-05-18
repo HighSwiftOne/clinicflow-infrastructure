@@ -165,6 +165,7 @@ resource "aws_s3_bucket_versioning" "cloudtrail_versioning" {
 }
 
 # checkov:skip=CKV_AWS_300: "Architecture - Abort timelines are managed natively by parent CloudTrail logging rotation matrices."
+# checkov:skip=CKV2_AWS_62: "Architecture - Event notifications are unneeded for system log data lake drops."
 resource "aws_s3_bucket_lifecycle_configuration" "cloudtrail_lifecycle" {
   bucket = aws_s3_bucket.cloudtrail_bucket.id
   rule {
