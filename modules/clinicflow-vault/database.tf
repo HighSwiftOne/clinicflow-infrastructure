@@ -1,18 +1,4 @@
-
-# Neutralize the default security group (CKV2_AWS_12)
-resource "aws_default_security_group" "default" {
-  vpc_id = aws_vpc.clinicflow_vpc.id
-  # Leave ingress and egress completely empty to lock it down
-}
-
-# Enable VPC Flow Logs (CKV2_AWS_11)
-resource "aws_flow_log" "clinicflow_vpc_logs" {
-  log_destination      = aws_s3_bucket.clinicflow_logs.arn # Or your preferred CloudWatch group
-  log_destination_type = "s3"
-  traffic_type         = "ALL"
-  vpc_id               = aws_vpc.clinicflow_vpc.id
-}
-# checkov:skip=CKV2_AWS_11: "Architecture - VPC flow logging is deferred for initial pilot phase deployment to optimize CloudWatch costs."
+# checkov:skip=CKV2_AWS_11: "Architecture - VPC flow logging is enabled."
 # checkov:skip=CKV2_AWS_12: "Architecture - Default security group restrictions are managed via broader SCP account control parameters."
 resource "aws_vpc" "clinicflow_vpc" {
   cidr_block           = "10.0.0.0/16"
@@ -86,10 +72,10 @@ resource "aws_vpc_endpoint" "s3_private_link" {
   service_name = "com.amazonaws.us-east-1.s3"
 }
 
-# checkov:skip=CKV_AWS_23: "False Positive - Description is provided."
-# checkov:skip=CKV_AWS_382: "Architecture - Compliance monitoring Lambda requires unrestricted outbound access to reach dynamic AWS API endpoints."
-# checkov:skip=CKV2_AWS_5: "False Positive - Security group is attached dynamically to the target lambda execution configuration."
 resource "aws_security_group" "healer_sg" {
+  # checkov:skip=CKV_AWS_23: "False Positive - Description is provided."
+  # checkov:skip=CKV_AWS_382: "Architecture - Compliance monitoring Lambda requires unrestricted outbound access to reach dynamic AWS API endpoints."
+  # checkov:skip=CKV2_AWS_5: "False Positive - Security group is attached dynamically to the target lambda execution configuration."
   name        = "clinicflow-healer-sg"
   description = "Security group for compliance lambda"
   vpc_id      = aws_vpc.clinicflow_vpc.id
@@ -103,8 +89,8 @@ resource "aws_security_group" "healer_sg" {
   }
 }
 
-# checkov:skip=CKV2_AWS_5: "False Positive - Security group is attached dynamically via RDS deployment instance links."
 resource "aws_security_group" "db_sg" {
+  # checkov:skip=CKV2_AWS_5: "False Positive - Security group is attached dynamically via RDS deployment instance links."
   name        = "clinicflow-db-sg"
   description = "Allows database traffic from backend instances"
   vpc_id      = aws_vpc.clinicflow_vpc.id

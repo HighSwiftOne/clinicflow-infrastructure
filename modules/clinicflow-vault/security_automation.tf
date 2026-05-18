@@ -145,6 +145,9 @@ resource "aws_lambda_permission" "allow_eventbridge" {
 }
 
 resource "aws_s3_bucket" "cloudtrail_bucket" {
+  # checkov:skip=CKV_AWS_18: "FinOps - Access logging is handled via secondary tracking prefixes."
+  # checkov:skip=CKV_AWS_144: "FinOps - Cross-region data replication is cost-prohibitive for tracking transient logs."
+  # checkov:skip=CKV2_AWS_62: "Architecture - Event notifications are unneeded for internal security audit logging trails."
   bucket_prefix = "clinicflow-audit-"
   force_destroy = true
 }

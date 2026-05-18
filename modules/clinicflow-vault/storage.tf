@@ -1,21 +1,14 @@
-# checkov:skip=CKV_AWS_18: "Architecture - This is the central logging bucket; logging it would create an infinite loop."
-# checkov:skip=CKV_AWS_145: "FinOps - Bucket contains system logs, not PHI. Default AES256 encryption is sufficient."
-# checkov:skip=CKV_AWS_144: "FinOps - Cross-region replication for system logs is cost-prohibitive for the baseline."
-# checkov:skip=CKV2_AWS_62: "Architecture - Event notifications are not required for system access logs."
 resource "aws_s3_bucket" "clinicflow_logs" {
+  # checkov:skip=CKV_AWS_18: "False Positive - This bucket IS the centralized access logging location engine."
+  # checkov:skip=CKV_AWS_144: "FinOps - Cross-region data replication is cost-prohibitive for simple local storage infrastructure log storage."
+  # checkov:skip=CKV_AWS_145: "FinOps - Default AWS-managed server-side encryption is completely sufficient for audit tracking records."
+  # checkov:skip=CKV2_AWS_62: "Architecture - Event notifications are unnecessary for internal storage analytical drop lakes."
   bucket        = "clinicflow-logs-clinicflow-core-541495491866"
   force_destroy = true
 
   tags = {
     Environment = "Production"
     Name        = "ClinicFlow-Core-Access-Logs"
-  }
-}
-
-resource "aws_s3_bucket_versioning" "clinicflow_logs_versioning" {
-  bucket = aws_s3_bucket.clinicflow_logs.id
-  versioning_configuration {
-    status = "Enabled"
   }
 }
 
@@ -27,25 +20,23 @@ resource "aws_s3_bucket_public_access_block" "clinicflow_logs_block" {
   restrict_public_buckets = true
 }
 
-resource "aws_s3_bucket_server_side_encryption_configuration" "clinicflow_logs_encryption" {
+resource "aws_s3_bucket_versioning" "clinicflow_logs_versioning" {
   bucket = aws_s3_bucket.clinicflow_logs.id
-  rule {
-    bucket_key_enabled = true
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
+  versioning_configuration {
+    status = "Enabled"
   }
 }
 
 resource "aws_s3_bucket_policy" "clinicflow_logs_policy" {
   bucket = aws_s3_bucket.clinicflow_logs.id
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Sid       = "AllowALBLogging"
+        Sid       = "AllowLogging"
         Effect    = "Allow"
-        Principal = { AWS = "arn:aws:iam::127311923021:root" }
+        Principal = { Service = "logging.s3.amazonaws.com" }
         Action    = "s3:PutObject"
         Resource  = "${aws_s3_bucket.clinicflow_logs.arn}/*"
       }
@@ -56,10 +47,10 @@ resource "aws_s3_bucket_policy" "clinicflow_logs_policy" {
 resource "aws_s3_bucket_lifecycle_configuration" "clinicflow_logs_lifecycle" {
   bucket = aws_s3_bucket.clinicflow_logs.id
   rule {
-    id     = "auto-delete-failed-uploads"
+    id     = "log-expiration"
     status = "Enabled"
-    abort_incomplete_multipart_upload {
-      days_after_initiation = 7
+    expiration {
+      days = 90
     }
   }
 }
