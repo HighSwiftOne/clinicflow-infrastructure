@@ -1,3 +1,16 @@
+# Neutralize the default security group (CKV2_AWS_12)
+resource "aws_default_security_group" "default" {
+  vpc_id = aws_vpc.clinicflow_vpc.id
+  # Leave ingress and egress completely empty to lock it down
+}
+
+# Enable VPC Flow Logs (CKV2_AWS_11)
+resource "aws_flow_log" "clinicflow_vpc_logs" {
+  log_destination      = aws_s3_bucket.clinicflow_logs.arn # Or your preferred CloudWatch group
+  log_destination_type = "s3"
+  traffic_type         = "ALL"
+  vpc_id               = aws_vpc.clinicflow_vpc.id
+}
 resource "aws_vpc" "clinicflow_vpc" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true

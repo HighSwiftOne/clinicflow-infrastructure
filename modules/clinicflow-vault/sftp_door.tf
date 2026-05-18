@@ -7,7 +7,7 @@ resource "aws_s3_bucket" "patient_vault" {
   # checkov:skip=CKV2_AWS_61: "Architecture - Storage lifecycle policies are bypassed for local baseline data collection."
   # checkov:skip=CKV2_AWS_62: "Architecture - Event notifications are unnecessary for internal storage drop zones."
   bucket_prefix = "clinicflow-patient-vault-"
-  force_destroy = true 
+  force_destroy = true
 }
 
 resource "aws_s3_bucket_versioning" "patient_vault_versioning" {
@@ -30,8 +30,8 @@ resource "aws_iam_role" "sftp_logging_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Action = "sts:AssumeRole",
-      Effect = "Allow",
+      Action    = "sts:AssumeRole",
+      Effect    = "Allow",
       Principal = { Service = "transfer.amazonaws.com" }
     }]
   })
@@ -49,7 +49,7 @@ resource "aws_transfer_server" "clinicflow_sftp" {
   protocols              = ["SFTP"]
   identity_provider_type = "SERVICE_MANAGED"
   logging_role           = aws_iam_role.sftp_logging_role.arn
-  security_policy_name   = "TransferSecurityPolicy-2024-01" 
+  security_policy_name   = "TransferSecurityPolicy-2024-01"
 
   tags = {
     Name = "ClinicFlow-Front-Door"
@@ -61,8 +61,8 @@ resource "aws_iam_role" "receptionist_sftp_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Action = "sts:AssumeRole",
-      Effect = "Allow",
+      Action    = "sts:AssumeRole",
+      Effect    = "Allow",
       Principal = { Service = "transfer.amazonaws.com" }
     }]
   })
