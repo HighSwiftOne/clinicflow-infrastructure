@@ -1,24 +1,35 @@
-# 1. The Terraform Block (Must be closed!)
+# ==========================================
+# 1. TERRAFORM & BACKEND CONFIGURATION
+# ==========================================
 terraform {
+  required_version = ">= 1.5.0"
+
+  backend "s3" {
+    bucket       = "clinicflow-state-vault-541495491866"
+    key          = "production/terraform.tfstate"
+    region       = "us-east-1"
+    use_lockfile = true # Bypasses the missing DynamoDB table initialization crash
+  }
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
   }
-} # <--- THIS is the bracket that is missing!
+}
 
-# 2. The Provider Block
+# ==========================================
+# 2. PROVIDER SPECIFICATION
+# ==========================================
 provider "aws" {
   region = "us-east-1"
 }
 
-# 3. Your Module Block
+# ==========================================
+# 3. ROOT MODULE DEPLOYMENT CALLER
+# ==========================================
+# This link bridges your root folder directly to your clinicflow-vault folder cartridge
 module "pilot_medspa" {
   source = "./modules/clinicflow-vault"
-  # ... your other module variables stay the same
-} # Force pipeline sync baseline
-# Force validation pipeline sync
-# Compliance verification loop verified
-# Production infrastructure baseline verified
-# Production-ready compliance framework verified
+}git add main.tf
