@@ -8,7 +8,7 @@ terraform {
     bucket       = "clinicflow-state-vault-541495491866"
     key          = "production/terraform.tfstate"
     region       = "us-east-1"
-    use_lockfile = true # Bypasses the missing DynamoDB table initialization crash
+    use_lockfile = true 
   }
 
   required_providers {
@@ -29,7 +29,6 @@ provider "aws" {
 # ==========================================
 # 3. ROOT MODULE DEPLOYMENT CALLER
 # ==========================================
-# This link bridges your root folder directly to your clinicflow-vault folder cartridge
 module "pilot_medspa" {
   source = "./modules/clinicflow-vault"
-}git add main.tf
+}
