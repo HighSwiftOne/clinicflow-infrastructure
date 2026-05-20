@@ -1,5 +1,5 @@
 # ====================================================================
-# 1. VIRTUAL PRIVATE CLOUD ROOT NETWORK
+# VIRTUAL PRIVATE CLOUD ROOT NETWORK
 # ====================================================================
 resource "aws_vpc" "clinicflow_vpc" {
   cidr_block           = "10.0.0.0/16"
@@ -13,10 +13,8 @@ resource "aws_vpc" "clinicflow_vpc" {
 }
 
 # ====================================================================
-# 2. DEFAULT SECURITY GROUP RECONCILIATION (Resolves CKV2_AWS_12)
+# DEFAULT SECURITY GROUP RECONCILIATION
 # ====================================================================
-# This block adopts the hidden default group and strips all rules, 
-# turning it into an absolute network black hole. 
 resource "aws_default_security_group" "default" {
   vpc_id = aws_vpc.clinicflow_vpc.id
 
@@ -27,7 +25,7 @@ resource "aws_default_security_group" "default" {
 }
 
 # ====================================================================
-# LAYER 3 VPC FLOW LOG ENGINE (HARDENED RETENTION)
+# LAYER 3 VPC FLOW LOG ENGINE
 # ====================================================================
 resource "aws_flow_log" "vpc_flow_logs" {
   iam_role_arn    = aws_iam_role.vpc_flow_log_role.arn
@@ -37,10 +35,9 @@ resource "aws_flow_log" "vpc_flow_logs" {
 }
 
 resource "aws_cloudwatch_log_group" "vpc_flow_log_group" {
-  name = "/aws/vpc/clinicflow-core-flow-logs"
-  # FIXED: Meets the compliance mandate for a 1-year audit runway (Resolves CKV_AWS_338)
+  name              = "/aws/vpc/clinicflow-core-flow-logs"
   retention_in_days = 365
-  kms_key_id        = aws_kms_key.clinicflow_cmk.arn # Bound to our dedicated encryption vault
+  kms_key_id        = aws_kms_key.clinicflow_cmk.arn
 }
 
 resource "aws_iam_role" "vpc_flow_log_role" {
@@ -84,7 +81,7 @@ resource "aws_iam_role_policy" "vpc_flow_log_policy" {
 }
 
 # ====================================================================
-# 4. PERIMETER INTERNET ROUTING GATEWAY
+# PERIMETER INTERNET ROUTING GATEWAY
 # ====================================================================
 resource "aws_internet_gateway" "clinicflow_igw" {
   vpc_id = aws_vpc.clinicflow_vpc.id
@@ -110,24 +107,24 @@ resource "aws_route_table" "public_rt" {
 }
 
 # ====================================================================
-# 5. SUB NETWORKING LAYOUTS (PUBLIC TIER)
+# SUB NETWORKING LAYOUTS (PUBLIC TIER TIGHTENED)
 # ====================================================================
 resource "aws_subnet" "public_a" {
-  # checkov:skip=CKV_AWS_130: "False Positive - Public subnets require public IP assignments for ingress ALBs." [cite: 63]
-  vpc_id                  = aws_vpc.clinicflow_vpc.id
-  cidr_block              = "10.0.1.0/24"
-  availability_zone       = "us-east-1a"
-  map_public_ip_on_launch = true
+  vpc_id            = aws_vpc.clinicflow_vpc.id
+  cidr_block        = "10.0.1.0/24"
+  availability_zone = "us-east-1a"
+  # FIXED: Closes the public deployment trapdoor vulnerability (Resolves CKV_AWS_130)
+  map_public_ip_on_launch = false
 
   tags = { Name = "ClinicFlow-Public-Subnet-A" }
 }
 
 resource "aws_subnet" "public_b" {
-  # checkov:skip=CKV_AWS_130: "False Positive - Public subnets require public IP assignments for ingress ALBs." [cite: 64]
-  vpc_id                  = aws_vpc.clinicflow_vpc.id
-  cidr_block              = "10.0.2.0/24"
-  availability_zone       = "us-east-1b"
-  map_public_ip_on_launch = true
+  vpc_id            = aws_vpc.clinicflow_vpc.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "us-east-1b"
+  # FIXED: Closes the public deployment trapdoor vulnerability (Resolves CKV_AWS_130)
+  map_public_ip_on_launch = false
 
   tags = { Name = "ClinicFlow-Public-Subnet-B" }
 }
