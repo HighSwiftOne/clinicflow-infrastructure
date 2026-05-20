@@ -47,7 +47,6 @@ resource "aws_s3_bucket_logging" "patient_vault_logging" {
   target_prefix = "patient-vault-access-logs/"
 }
 
-# FIXED: Attaches automated compliance garbage-collection mapping (Resolves CKV2_AWS_61)
 resource "aws_s3_bucket_lifecycle_configuration" "patient_vault_lifecycle" {
   # checkov:skip=CKV_AWS_300: "Architecture - Multipart file upload abort timelines are governed by global lifecycle standards."
   bucket = aws_s3_bucket.patient_vault.id
@@ -58,13 +57,11 @@ resource "aws_s3_bucket_lifecycle_configuration" "patient_vault_lifecycle" {
 
     filter {}
 
-    # Automatically transitions files to cold archive after 90 days to save on billing
     transition {
       days          = 90
       storage_class = "GLACIER"
     }
 
-    # Automatically enforces permanent data destruction at the legal 7-year mark
     expiration {
       days = 2555
     }

@@ -7,8 +7,8 @@ resource "aws_transfer_server" "clinicflow_sftp" {
   logging_role           = aws_iam_role.sftp_logging_role.arn
   protocols              = ["SFTP"]
 
-  # FIXED: Locks perimeter to elite, non-deprecated modern cipher suites (Resolves CKV_AWS_380)
-  security_policy_name = "TransferSecurityPolicy-2024-01"
+  # FIXED: Upgrades edge perimeter to strict FIPS-validated cryptography suites (Resolves CKV_AWS_380)
+  security_policy_name = "TransferSecurityPolicy-FIPS-2024-01"
 
   tags = {
     Name        = "ClinicFlow-SFTP-Gateway"
@@ -38,7 +38,7 @@ resource "aws_iam_role_policy" "sftp_logging_policy" {
   name = "ClinicFlow-SFTP-Logging-Policy"
   role = aws_iam_role.sftp_logging_role.id
 
-  # FIXED: Restricts logging capabilities to safe CloudWatch scopes only (Resolves CKV_AWS_355 & CKV_AWS_290)
+  # FIXED: Splits restrictable and global actions into isolated statement evaluations (Resolves CKV_AWS_355)
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -49,6 +49,7 @@ resource "aws_iam_role_policy" "sftp_logging_policy" {
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ]
+        # Strictly bounds log writing capabilities only to the transfer engine logging namespace
         Resource = "arn:aws:logs:us-east-1:541495491866:log-group:/aws/transfer/*"
       },
       {
@@ -58,7 +59,7 @@ resource "aws_iam_role_policy" "sftp_logging_policy" {
           "logs:DescribeLogStreams",
           "logs:DescribeLogGroups"
         ]
-        Resource = "*" # Describe calls do not allow resource-level constraints in the AWS API
+        Resource = "*" # Account-wide global read actions that do not support ARN resource restrictions
       }
     ]
   })
@@ -89,7 +90,6 @@ resource "aws_iam_role_policy" "receptionist_sftp_policy" {
   name = "ClinicFlow-Receptionist-SFTP-Policy"
   role = aws_iam_role.receptionist_sftp_role.id
 
-  # FIXED: Eliminates wildcard resources. Cryptographic capability is strictly bound to our CMK (Resolves CKV_AWS_355 & CKV_AWS_290)
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
