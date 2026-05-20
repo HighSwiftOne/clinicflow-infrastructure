@@ -1,5 +1,65 @@
 # ====================================================================
-# GLOBAL IDENTITY & ACCESS IMPORTS (VERIFIED ACTIVE)
+# NETWORK SEGREGATION DATA PLANE IMPORTS (Resolves CIDR Conflicts)
+# ====================================================================
+
+# Public Subnets Data Tier
+import {
+  to = module.pilot_medspa.aws_subnet.public_a
+  id = "subnet-0708f51dfcf5451a4"
+}
+
+import {
+  to = module.pilot_medspa.aws_subnet.public_b
+  id = "subnet-04b3cf4eb32d72134"
+}
+
+# Private Subnets Data Tier
+import {
+  to = module.pilot_medspa.aws_subnet.private_a
+  id = "subnet-0db3afef566f194c7"
+}
+
+import {
+  to = module.pilot_medspa.aws_subnet.private_b
+  id = "subnet-0cb8bf5fc62e841f9"
+}
+
+# Perimeter Routing Gateway
+import {
+  to = module.pilot_medspa.aws_internet_gateway.igw
+  id = "igw-0a9d4a31fc71125b2"
+}
+
+# ====================================================================
+# FIREWALL & SECURITY GROUP IMPORTS (Resolves Duplicate Group Locks)
+# ====================================================================
+
+import {
+  to = module.pilot_medspa.aws_security_group.web_sg
+  id = "sg-04cb5fb1be4d8f1d7"
+}
+
+import {
+  to = module.pilot_medspa.aws_security_group.healer_sg
+  id = "sg-0cf9bf77fa8f6e2e5"
+}
+
+import {
+  to = module.pilot_medspa.aws_security_group.db_sg
+  id = "sg-06cf4bfa8ef8c2f1f"
+}
+
+# ====================================================================
+# TRAFFIC INGRESS TARGET GROUP IMPORTS (Resolves TargetGroup Exists)
+# ====================================================================
+
+import {
+  to = module.pilot_medspa.aws_lb_target_group.clinicflow_tg
+  id = "arn:aws:elasticloadbalancing:us-east-1:541495491866:targetgroup/ClinicFlow-TargetGroup/7b86ad491f2e1a3d"
+}
+
+# ====================================================================
+# GLOBAL IDENTITY & ACCESS CONTROL IMPORTS
 # ====================================================================
 
 import {
@@ -13,7 +73,7 @@ import {
 }
 
 # ====================================================================
-# NETWORK CORE IMPORTS (VERIFIED ACTIVE)
+# VIRTUAL PRIVATE CLOUD ROOT LINK
 # ====================================================================
 
 import {
@@ -22,7 +82,7 @@ import {
 }
 
 # ====================================================================
-# PRIOR ESTABLISHED BASELINE STATE STORAGE IMPORTS (VERIFIED ACTIVE)
+# STATE MEMORY VAULT TARGETS
 # ====================================================================
 
 import {

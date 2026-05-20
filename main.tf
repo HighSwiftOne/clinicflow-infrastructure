@@ -1,10 +1,6 @@
-# ==========================================
-# 1. TERRAFORM & CLOUD BACKEND CONFIGURATION
-# ==========================================
 terraform {
   required_version = ">= 1.5.0"
 
-  # The vault bucket now physically exists, so we safely lock our state to the cloud!
   backend "s3" {
     bucket       = "clinicflow-state-vault-541495491866"
     key          = "production/terraform.tfstate"
@@ -20,16 +16,10 @@ terraform {
   }
 }
 
-# ==========================================
-# 2. PROVIDER SPECIFICATION
-# ==========================================
 provider "aws" {
   region = "us-east-1"
 }
 
-# ==========================================
-# 3. ROOT MODULE DEPLOYMENT CALLER
-# ==========================================
 module "pilot_medspa" {
   source = "./modules/clinicflow-vault"
 }
