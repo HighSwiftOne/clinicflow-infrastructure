@@ -1,14 +1,5 @@
 # ====================================================================
-# NETWORK PARALLEL INTEGRATION ROOT LINK (VERIFIED ACTIVE)
-# ====================================================================
-
-import {
-  to = module.pilot_medspa.aws_vpc.clinicflow_vpc
-  id = "vpc-0867358f77f706712"
-}
-
-# ====================================================================
-# GLOBAL IDENTITY & ACCESS CONTROL IMPORTS (VERIFIED ACTIVE)
+# GLOBAL IDENTITY & ACCESS CONTROL IMPORTS
 # ====================================================================
 
 import {
@@ -27,51 +18,16 @@ import {
 }
 
 # ====================================================================
-# MASTER COMPLIANCE VAULT & AUDIT TRAIL IMPORTS (VERIFIED ACTIVE)
+# VIRTUAL PRIVATE CLOUD ROOT LINK
 # ====================================================================
 
 import {
-  to = module.pilot_medspa.aws_s3_bucket.clinicflow_logs
-  id = "clinicflow-logs-clinicflow-core-541495491866"
-}
-
-import {
-  to = module.pilot_medspa.aws_iam_policy.image_builder_boundary
-  id = "arn:aws:iam::541495491866:policy/ClinicFlow-ImageBuilder-Boundary"
-}
-
-import {
-  to = module.pilot_medspa.aws_iam_role.image_builder_role
-  id = "clinicflow-image-builder-role"
-}
-
-import {
-  to = module.pilot_medspa.aws_iam_role.lambda_healer_role
-  id = "ClinicFlow-S3-Healer-Role"
-}
-
-import {
-  to = module.pilot_medspa.aws_iam_role.sftp_logging_role
-  id = "ClinicFlow-SFTP-Logging-Role"
-}
-
-import {
-  to = module.pilot_medspa.aws_iam_role.receptionist_sftp_role
-  id = "ClinicFlow-Receptionist-SFTP"
-}
-
-import {
-  to = module.pilot_medspa.aws_cloudtrail.audit_trail
-  id = "clinicflow-audit-trail"
-}
-
-import {
-  to = module.pilot_medspa.aws_imagebuilder_component.clinicflow_hardening
-  id = "arn:aws:imagebuilder:us-east-1:541495491866:component/clinicflow-web-hardening/1.0.0/1"
+  to = module.pilot_medspa.aws_vpc.clinicflow_vpc
+  id = "vpc-0867358f77f706712"
 }
 
 # ====================================================================
-# CENTRAL STATE STORAGE BACKEND VAULTS (VERIFIED ACTIVE)
+# CENTRAL STATE STORAGE BACKEND VAULTS
 # ====================================================================
 
 import {
