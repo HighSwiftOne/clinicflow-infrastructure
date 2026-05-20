@@ -2,12 +2,12 @@
 # 1. VIRTUAL PRIVATE CLOUD ROOT NETWORK
 # ====================================================================
 resource "aws_vpc" "clinicflow_vpc" {
-  cidr_block           = "10.0.0.0/16" [cite: 45]
-  enable_dns_hostnames = true [cite: 46]
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
   enable_dns_support   = true
 
   tags = {
-    Name        = "ClinicFlow-Core-VPC" [cite: 47]
+    Name        = "ClinicFlow-Core-VPC"
     Environment = "Production"
   }
 }
