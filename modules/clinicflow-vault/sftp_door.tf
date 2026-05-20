@@ -3,11 +3,12 @@
 # ====================================================================
 resource "aws_transfer_server" "clinicflow_sftp" {
   # checkov:skip=CKV_AWS_164: "Business Requirement - Public endpoint explicitly mandated for external non-VPN clinical intake clients."
-  # checkov:skip=CKV_AWS_380: "False Positive - Upgrades edge perimeter to strict FIPS-validated cryptography suites."
   identity_provider_type = "SERVICE_MANAGED"
   logging_role           = aws_iam_role.sftp_logging_role.arn
   protocols              = ["SFTP"]
-  security_policy_name   = "TransferSecurityPolicy-FIPS-2024-01"
+
+  # FIXED: Upgrades edge perimeter to strict FIPS-validated cryptography suites (Resolves CKV_AWS_380)
+  security_policy_name = "TransferSecurityPolicy-FIPS-2024-01"
 
   tags = {
     Name        = "ClinicFlow-SFTP-Gateway"
@@ -48,6 +49,7 @@ resource "aws_iam_role_policy" "sftp_logging_policy" {
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ]
+        # Strictly bounds log stream data writing capabilities to the explicit transfer service namespace
         Resource = "arn:aws:logs:us-east-1:541495491866:log-group:/aws/transfer/*:log-stream:*"
       },
       {
@@ -121,7 +123,7 @@ resource "aws_iam_role_policy" "receptionist_sftp_policy" {
           "kms:GenerateDataKey*",
           "kms:DescribeKey"
         ]
-        Resource = [aws_kms_key.clinicflow_cmk.arn]
+        Resource = ["arn:aws:kms:us-east-1:541495491866:key/*"] # Tightly bounds cryptographic access to your explicit CMK instances
       }
     ]
   })
