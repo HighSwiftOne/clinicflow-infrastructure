@@ -1,20 +1,94 @@
 # ====================================================================
-# VIRTUAL PRIVATE CLOUD ROOT NETWORK
+# 1. VIRTUAL PRIVATE CLOUD ROOT NETWORK
 # ====================================================================
 resource "aws_vpc" "clinicflow_vpc" {
-  # checkov:skip=CKV_AWS_11: "Architecture - VPC flow logs are deferred for initial laboratory scopes."
-  cidr_block           = "10.0.0.0/16"
-  enable_dns_hostnames = true
+  cidr_block           = "10.0.0.0/16" [cite: 45]
+  enable_dns_hostnames = true [cite: 46]
   enable_dns_support   = true
 
   tags = {
-    Name        = "ClinicFlow-Core-VPC"
+    Name        = "ClinicFlow-Core-VPC" [cite: 47]
     Environment = "Production"
   }
 }
 
 # ====================================================================
-# PERIMETER INTERNET ROUTING GATEWAY (RECONCILED BASELINE)
+# 2. DEFAULT SECURITY GROUP RECONCILIATION (Resolves CKV2_AWS_12)
+# ====================================================================
+# This block adopts the hidden default group and strips all rules, 
+# turning it into an absolute network black hole. 
+resource "aws_default_security_group" "default" {
+  vpc_id = aws_vpc.clinicflow_vpc.id
+
+  tags = {
+    Name        = "ClinicFlow-Default-Blackhole"
+    Environment = "Production"
+  }
+}
+
+# ====================================================================
+# 3. LAYER 3 VPC FLOW LOG ENGINE (Resolves CKV2_AWS_11)
+# ====================================================================
+resource "aws_flow_log" "vpc_flow_logs" {
+  iam_role_arn    = aws_iam_role.vpc_flow_log_role.arn
+  log_destination = aws_cloudwatch_log_group.vpc_flow_log_group.arn
+  traffic_type    = "ALL"
+  vpc_id          = aws_vpc.clinicflow_vpc.id
+
+  tags = {
+    Name        = "ClinicFlow-VPC-Flow-Logs"
+    Environment = "Production"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "vpc_flow_log_group" {
+  name              = "/aws/vpc/clinicflow-core-flow-logs"
+  retention_in_days = 90
+  kms_key_id        = "arn:aws:kms:us-east-1:541495491866:alias/aws/logs" # Enforces encryption at rest
+}
+
+resource "aws_iam_role" "vpc_flow_log_role" {
+  name = "ClinicFlow-VPC-Flow-Log-Role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "VPCAssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "vpc-flow-logs.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "vpc_flow_log_policy" {
+  name = "ClinicFlow-VPC-Flow-Log-Policy"
+  role = aws_iam_role.vpc_flow_log_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AWSVPCFlowLogWrite"
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams"
+        ]
+        Resource = "${aws_cloudwatch_log_group.vpc_flow_log_group.arn}:*"
+      }
+    ]
+  })
+}
+
+# ====================================================================
+# 4. PERIMETER INTERNET ROUTING GATEWAY
 # ====================================================================
 resource "aws_internet_gateway" "clinicflow_igw" {
   vpc_id = aws_vpc.clinicflow_vpc.id
@@ -25,15 +99,11 @@ resource "aws_internet_gateway" "clinicflow_igw" {
   }
 }
 
-# ====================================================================
-# PUBLIC INGRESS ROUTING DATA PLANE
-# ====================================================================
 resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.clinicflow_vpc.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    # FIXED: Maps seamlessly to our declarative moved block reference
     gateway_id = aws_internet_gateway.clinicflow_igw.id
   }
 
@@ -44,10 +114,10 @@ resource "aws_route_table" "public_rt" {
 }
 
 # ====================================================================
-# SUB NETWORKING LAYOUTS (PUBLIC TIER)
+# 5. SUB NETWORKING LAYOUTS (PUBLIC TIER)
 # ====================================================================
 resource "aws_subnet" "public_a" {
-  # checkov:skip=CKV_AWS_130: "False Positive - Public subnets require public IP assignments for ingress ALBs."
+  # checkov:skip=CKV_AWS_130: "False Positive - Public subnets require public IP assignments for ingress ALBs." [cite: 63]
   vpc_id                  = aws_vpc.clinicflow_vpc.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "us-east-1a"
@@ -57,7 +127,7 @@ resource "aws_subnet" "public_a" {
 }
 
 resource "aws_subnet" "public_b" {
-  # checkov:skip=CKV_AWS_130: "False Positive - Public subnets require public IP assignments for ingress ALBs."
+  # checkov:skip=CKV_AWS_130: "False Positive - Public subnets require public IP assignments for ingress ALBs." [cite: 64]
   vpc_id                  = aws_vpc.clinicflow_vpc.id
   cidr_block              = "10.0.2.0/24"
   availability_zone       = "us-east-1b"
