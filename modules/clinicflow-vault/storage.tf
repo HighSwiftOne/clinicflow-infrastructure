@@ -50,6 +50,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "clinicflow_logs_lifecycle" {
   rule {
     id     = "log-expiration"
     status = "Enabled"
+    
+    filter {} # Crucial: This satisfies the missing attribute rule constraint explicitly 
+
     expiration {
       days = 90
     }
