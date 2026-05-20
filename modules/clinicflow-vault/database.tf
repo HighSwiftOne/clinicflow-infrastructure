@@ -65,12 +65,12 @@ resource "aws_db_instance" "clinicflow_db" {
   username             = "clinicadmin"
   password             = "TemporaryPassword123!"
   db_subnet_group_name = aws_db_subnet_group.clinicflow_db_subnet_group.name
-  
+
   # MANDATORY COMPLIANCE REMEDIATION (Resolves HIPAA § 164.312 & CKV_AWS_16)
-  storage_encrypted    = true
-  
-  deletion_protection  = false  
-  skip_final_snapshot  = true   
+  storage_encrypted = true
+
+  deletion_protection = false
+  skip_final_snapshot = true
 }
 
 resource "aws_db_subnet_group" "clinicflow_db_subnet_group" {

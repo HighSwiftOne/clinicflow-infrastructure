@@ -65,7 +65,7 @@ resource "aws_dynamodb_table" "terraform_locks" {
   }
 
   tags = {
-    Name = "ClinicFlow-State-Locks"
+    Name        = "ClinicFlow-State-Locks"
     Environment = "Production"
   }
 }

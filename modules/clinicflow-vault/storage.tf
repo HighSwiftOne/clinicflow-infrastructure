@@ -50,11 +50,23 @@ resource "aws_s3_bucket_lifecycle_configuration" "clinicflow_logs_lifecycle" {
   rule {
     id     = "log-expiration"
     status = "Enabled"
-    
+
     filter {} # Crucial: This satisfies the missing attribute rule constraint explicitly 
 
     expiration {
       days = 90
     }
+  }
+}
+resource "aws_s3_bucket_server_side_encryption_configuration" "patient_vault_encryption" {
+  bucket = aws_s3_bucket.patient_vault.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      # FIXED: Transitions vault from multi-tenant SSE-S3 to dedicated SSE-KMS CMK
+      kms_master_key_id = aws_kms_key.clinicflow_cmk.arn
+      sse_algorithm     = "aws:kms"
+    }
+    bucket_key_enabled = true # FinOps Option: Reduces KMS API call overhead by 99% safely
   }
 }

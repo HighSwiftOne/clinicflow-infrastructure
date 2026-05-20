@@ -27,24 +27,20 @@ resource "aws_default_security_group" "default" {
 }
 
 # ====================================================================
-# 3. LAYER 3 VPC FLOW LOG ENGINE (Resolves CKV2_AWS_11)
+# LAYER 3 VPC FLOW LOG ENGINE (HARDENED RETENTION)
 # ====================================================================
 resource "aws_flow_log" "vpc_flow_logs" {
   iam_role_arn    = aws_iam_role.vpc_flow_log_role.arn
   log_destination = aws_cloudwatch_log_group.vpc_flow_log_group.arn
   traffic_type    = "ALL"
   vpc_id          = aws_vpc.clinicflow_vpc.id
-
-  tags = {
-    Name        = "ClinicFlow-VPC-Flow-Logs"
-    Environment = "Production"
-  }
 }
 
 resource "aws_cloudwatch_log_group" "vpc_flow_log_group" {
-  name              = "/aws/vpc/clinicflow-core-flow-logs"
-  retention_in_days = 90
-  kms_key_id        = "arn:aws:kms:us-east-1:541495491866:alias/aws/logs" # Enforces encryption at rest
+  name = "/aws/vpc/clinicflow-core-flow-logs"
+  # FIXED: Meets the compliance mandate for a 1-year audit runway (Resolves CKV_AWS_338)
+  retention_in_days = 365
+  kms_key_id        = aws_kms_key.clinicflow_cmk.arn # Bound to our dedicated encryption vault
 }
 
 resource "aws_iam_role" "vpc_flow_log_role" {

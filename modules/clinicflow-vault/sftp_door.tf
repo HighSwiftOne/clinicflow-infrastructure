@@ -105,3 +105,15 @@ resource "aws_transfer_user" "frontdesk_user" {
   role           = aws_iam_role.receptionist_sftp_role.arn
   home_directory = "/${aws_s3_bucket.patient_vault.id}/"
 }
+resource "aws_s3_bucket_server_side_encryption_configuration" "patient_vault_encryption" {
+  bucket = aws_s3_bucket.patient_vault.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      # FIXED: Transitions vault from multi-tenant SSE-S3 to dedicated SSE-KMS CMK
+      kms_master_key_id = aws_kms_key.clinicflow_cmk.arn
+      sse_algorithm     = "aws:kms"
+    }
+    bucket_key_enabled = true # FinOps Option: Reduces KMS API call overhead by 99% safely
+  }
+}
