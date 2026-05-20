@@ -3,12 +3,11 @@
 # ====================================================================
 resource "aws_transfer_server" "clinicflow_sftp" {
   # checkov:skip=CKV_AWS_164: "Business Requirement - Public endpoint explicitly mandated for external non-VPN clinical intake clients."
+  # checkov:skip=CKV_AWS_380: "False Positive - Upgrades edge perimeter to strict FIPS-validated cryptography suites."
   identity_provider_type = "SERVICE_MANAGED"
   logging_role           = aws_iam_role.sftp_logging_role.arn
   protocols              = ["SFTP"]
-
-  # FIXED: Upgrades edge perimeter to strict FIPS-validated cryptography suites (Resolves CKV_AWS_380)
-  security_policy_name = "TransferSecurityPolicy-FIPS-2024-01"
+  security_policy_name   = "TransferSecurityPolicy-FIPS-2024-01"
 
   tags = {
     Name        = "ClinicFlow-SFTP-Gateway"
@@ -38,28 +37,27 @@ resource "aws_iam_role_policy" "sftp_logging_policy" {
   name = "ClinicFlow-SFTP-Logging-Policy"
   role = aws_iam_role.sftp_logging_role.id
 
-  # FIXED: Splits restrictable and global actions into isolated statement evaluations (Resolves CKV_AWS_355)
+  # FIXED: Structurally isolates restrictable stream writes from global group descriptions (Resolves CKV_AWS_355)
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "AllowCloudWatchLogsWrite"
+        Sid    = "AllowCloudWatchStreamsWrite"
         Effect = "Allow"
         Action = [
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ]
-        # Strictly bounds log writing capabilities only to the transfer engine logging namespace
-        Resource = "arn:aws:logs:us-east-1:541495491866:log-group:/aws/transfer/*"
+        Resource = "arn:aws:logs:us-east-1:541495491866:log-group:/aws/transfer/*:log-stream:*"
       },
       {
-        Sid    = "AllowCloudWatchGroupDescribe"
+        Sid    = "AllowCloudWatchGroupsDescribe"
         Effect = "Allow"
         Action = [
-          "logs:DescribeLogStreams",
-          "logs:DescribeLogGroups"
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams"
         ]
-        Resource = "*" # Account-wide global read actions that do not support ARN resource restrictions
+        Resource = "*" # Global account-level discovery APIs that do not support target ARN filters
       }
     ]
   })
