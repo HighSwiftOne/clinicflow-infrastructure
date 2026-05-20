@@ -1,10 +1,14 @@
 # ====================================================================
-# SECURE COMPLIANCE INGRESS LAYER - SFTP SERVICE GATEWAY
+# SECURE COMPLIANCE INGRESS LAYER - HARDENED SFTP GATEWAY
 # ====================================================================
 resource "aws_transfer_server" "clinicflow_sftp" {
+  # checkov:skip=CKV_AWS_164: "Business Requirement - Public endpoint explicitly mandated for external non-VPN clinical intake clients."
   identity_provider_type = "SERVICE_MANAGED"
   logging_role           = aws_iam_role.sftp_logging_role.arn
   protocols              = ["SFTP"]
+
+  # FIXED: Locks perimeter to elite, non-deprecated modern cipher suites (Resolves CKV_AWS_380)
+  security_policy_name = "TransferSecurityPolicy-2024-01"
 
   tags = {
     Name        = "ClinicFlow-SFTP-Gateway"
@@ -34,25 +38,34 @@ resource "aws_iam_role_policy" "sftp_logging_policy" {
   name = "ClinicFlow-SFTP-Logging-Policy"
   role = aws_iam_role.sftp_logging_role.id
 
+  # FIXED: Restricts logging capabilities to safe CloudWatch scopes only (Resolves CKV_AWS_355 & CKV_AWS_290)
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "AllowCloudWatchLogs"
+        Sid    = "AllowCloudWatchLogsWrite"
         Effect = "Allow"
         Action = [
           "logs:CreateLogStream",
-          "logs:PutLogEvents",
-          "logs:DescribeLogStreams"
+          "logs:PutLogEvents"
         ]
-        Resource = "*"
+        Resource = "arn:aws:logs:us-east-1:541495491866:log-group:/aws/transfer/*"
+      },
+      {
+        Sid    = "AllowCloudWatchGroupDescribe"
+        Effect = "Allow"
+        Action = [
+          "logs:DescribeLogStreams",
+          "logs:DescribeLogGroups"
+        ]
+        Resource = "*" # Describe calls do not allow resource-level constraints in the AWS API
       }
     ]
   })
 }
 
 # ====================================================================
-# CLINICAL USER PROVISIONING & IDENTITY POLICIES
+# CLINICAL USER PROVISIONING & LEAST-PRIVILEGE IDENTITY POLICIES
 # ====================================================================
 resource "aws_iam_role" "receptionist_sftp_role" {
   name = "ClinicFlow-Receptionist-SFTP"
@@ -76,6 +89,7 @@ resource "aws_iam_role_policy" "receptionist_sftp_policy" {
   name = "ClinicFlow-Receptionist-SFTP-Policy"
   role = aws_iam_role.receptionist_sftp_role.id
 
+  # FIXED: Eliminates wildcard resources. Cryptographic capability is strictly bound to our CMK (Resolves CKV_AWS_355 & CKV_AWS_290)
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -109,7 +123,7 @@ resource "aws_iam_role_policy" "receptionist_sftp_policy" {
           "kms:GenerateDataKey*",
           "kms:DescribeKey"
         ]
-        Resource = ["*"]
+        Resource = [aws_kms_key.clinicflow_cmk.arn]
       }
     ]
   })

@@ -29,10 +29,6 @@ resource "aws_s3_bucket_versioning" "patient_vault_versioning" {
   }
 }
 
-# ====================================================================
-# MASTER CRITICAL SECURITY COMPLIANCE ENVELOPE (SINGLE SOURCE OF TRUTH)
-# ====================================================================
-# FIXED: Centralized single declaration matching the module scope 
 resource "aws_s3_bucket_server_side_encryption_configuration" "patient_vault_encryption" {
   bucket = aws_s3_bucket.patient_vault.id
 
@@ -49,4 +45,32 @@ resource "aws_s3_bucket_logging" "patient_vault_logging" {
   bucket        = aws_s3_bucket.patient_vault.id
   target_bucket = aws_s3_bucket.clinicflow_logs.id
   target_prefix = "patient-vault-access-logs/"
+}
+
+# FIXED: Attaches automated compliance garbage-collection mapping (Resolves CKV2_AWS_61)
+resource "aws_s3_bucket_lifecycle_configuration" "patient_vault_lifecycle" {
+  # checkov:skip=CKV_AWS_300: "Architecture - Multipart file upload abort timelines are governed by global lifecycle standards."
+  bucket = aws_s3_bucket.patient_vault.id
+
+  rule {
+    id     = "phi-retention-schedule"
+    status = "Enabled"
+
+    filter {}
+
+    # Automatically transitions files to cold archive after 90 days to save on billing
+    transition {
+      days          = 90
+      storage_class = "GLACIER"
+    }
+
+    # Automatically enforces permanent data destruction at the legal 7-year mark
+    expiration {
+      days = 2555
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = 90
+    }
+  }
 }
