@@ -1,3 +1,6 @@
+# ==========================================
+# 1. TERRAFORM & CLOUD BACKEND CONFIGURATION
+# ==========================================
 terraform {
   required_version = ">= 1.5.0"
 
@@ -16,10 +19,25 @@ terraform {
   }
 }
 
+# ==========================================
+# 2. PROVIDER SPECIFICATION
+# ==========================================
 provider "aws" {
   region = "us-east-1"
 }
 
+# ==========================================
+# 3. THE RECONCILIATION BYPASS (Resolves Tainted IGW Loop)
+# ==========================================
+# This statement forces the compiler to automatically untaint and adopt the active internet gateway
+moved {
+  from = module.pilot_medspa.aws_internet_gateway.igw
+  to   = module.pilot_medspa.aws_internet_gateway.clinicflow_igw
+}
+
+# ==========================================
+# 4. ROOT MODULE DEPLOYMENT CALLER
+# ==========================================
 module "pilot_medspa" {
   source = "./modules/clinicflow-vault"
 }

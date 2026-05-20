@@ -19,8 +19,13 @@ resource "aws_subnet" "public_b" {
   availability_zone = "us-east-1b"
 }
 
-resource "aws_internet_gateway" "igw" {
+resource "aws_internet_gateway" "clinicflow_igw" {
   vpc_id = aws_vpc.clinicflow_vpc.id
+
+  tags = {
+    Name        = "ClinicFlow-Gateway"
+    Environment = "Production"
+  }
 }
 
 resource "aws_route_table" "public_rt" {
