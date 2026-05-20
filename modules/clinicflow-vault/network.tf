@@ -81,12 +81,10 @@ resource "aws_iam_role_policy" "vpc_flow_log_policy" {
 }
 
 # ====================================================================
-# PERIMETER INTERNET ROUTING GATEWAY (ALIGNED WITH GROUND TRUTH)
+# PERIMETER INTERNET ROUTING GATEWAY
 # ====================================================================
+# FIXED: Invalid ID argument removed to adhere to declarative HCL resource schemas
 resource "aws_internet_gateway" "clinicflow_igw" {
-  # FIXED: Matches the physical gateway gripping your live VPC network fabric
-  # REPLACE the string below with your real igw-xxxxxxxxxxxxxxxxx ID if it differs
-  id     = "igw-0f388bac1226c68f4"
   vpc_id = aws_vpc.clinicflow_vpc.id
 
   tags = {
