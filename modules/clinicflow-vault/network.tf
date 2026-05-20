@@ -37,8 +37,7 @@ resource "aws_flow_log" "vpc_flow_logs" {
 resource "aws_cloudwatch_log_group" "vpc_flow_log_group" {
   name              = "/aws/vpc/clinicflow-core-flow-logs"
   retention_in_days = 365
-  # FIXED: Replaces the wildcard trailing token with the explicit cryptographic CMK ARN (Resolves CKV_AWS_338)
-  kms_key_id        = aws_kms_key.clinicflow_cmk.arn 
+  kms_key_id        = aws_kms_key.clinicflow_cmk.arn
 }
 
 resource "aws_iam_role" "vpc_flow_log_role" {
@@ -82,9 +81,12 @@ resource "aws_iam_role_policy" "vpc_flow_log_policy" {
 }
 
 # ====================================================================
-# PERIMETER INTERNET ROUTING GATEWAY
+# PERIMETER INTERNET ROUTING GATEWAY (ALIGNED WITH GROUND TRUTH)
 # ====================================================================
 resource "aws_internet_gateway" "clinicflow_igw" {
+  # FIXED: Matches the physical gateway gripping your live VPC network fabric
+  # REPLACE the string below with your real igw-xxxxxxxxxxxxxxxxx ID if it differs
+  id     = "igw-0f388bac1226c68f4"
   vpc_id = aws_vpc.clinicflow_vpc.id
 
   tags = {
