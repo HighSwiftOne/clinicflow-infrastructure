@@ -37,7 +37,8 @@ resource "aws_flow_log" "vpc_flow_logs" {
 resource "aws_cloudwatch_log_group" "vpc_flow_log_group" {
   name              = "/aws/vpc/clinicflow-core-flow-logs"
   retention_in_days = 365
-  kms_key_id        = "arn:aws:kms:us-east-1:541495491866:key/*"
+  # FIXED: Replaces the wildcard trailing token with the explicit cryptographic CMK ARN (Resolves CKV_AWS_338)
+  kms_key_id        = aws_kms_key.clinicflow_cmk.arn 
 }
 
 resource "aws_iam_role" "vpc_flow_log_role" {
@@ -110,20 +111,18 @@ resource "aws_route_table" "public_rt" {
 # SUB NETWORKING LAYOUTS (PUBLIC TIER TIGHTENED)
 # ====================================================================
 resource "aws_subnet" "public_a" {
-  vpc_id            = aws_vpc.clinicflow_vpc.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = "us-east-1a"
-  # FIXED: Closes public interface auto-assign loophole (Resolves CKV_AWS_130)
+  vpc_id                  = aws_vpc.clinicflow_vpc.id
+  cidr_block              = "10.0.1.0/24"
+  availability_zone       = "us-east-1a"
   map_public_ip_on_launch = false
 
   tags = { Name = "ClinicFlow-Public-Subnet-A" }
 }
 
 resource "aws_subnet" "public_b" {
-  vpc_id            = aws_vpc.clinicflow_vpc.id
-  cidr_block        = "10.0.2.0/24"
-  availability_zone = "us-east-1b"
-  # FIXED: Closes public interface auto-assign loophole (Resolves CKV_AWS_130)
+  vpc_id                  = aws_vpc.clinicflow_vpc.id
+  cidr_block              = "10.0.2.0/24"
+  availability_zone       = "us-east-1b"
   map_public_ip_on_launch = false
 
   tags = { Name = "ClinicFlow-Public-Subnet-B" }
