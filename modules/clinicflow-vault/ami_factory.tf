@@ -120,7 +120,7 @@ data "aws_ami" "amazon_linux" {
 resource "aws_imagebuilder_image_recipe" "clinicflow_recipe" {
   name         = "clinicflow-golden-image"
   parent_image = data.aws_ami.amazon_linux.id
-  version      = "1.0.1" # Incremented version to ensure a fresh build
+  version      = "1.0.2" # Incremented version to ensure a fresh build
 
   component {
     component_arn = aws_imagebuilder_component.clinicflow_hardening.arn

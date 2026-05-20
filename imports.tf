@@ -1,5 +1,28 @@
 # ====================================================================
-# CENTRAL SECURITY STATE GEAR IMPORTS
+# GLOBAL IDENTITY & ACCESS IMPORTS
+# ====================================================================
+
+import {
+  to = aws_iam_role.github_actions_role
+  id = "ClinicFlow-GitHub-Actions-Role"
+}
+
+import {
+  to = module.pilot_medspa.aws_iam_instance_profile.image_builder_profile
+  id = "clinicflow-image-builder-profile"
+}
+
+# ====================================================================
+# NETWORK CORE IMPORTS (Resolves VpcLimitExceeded)
+# ====================================================================
+
+import {
+  to = module.pilot_medspa.aws_vpc.clinicflow_vpc
+  id = "vpc-0867358f77f706712"
+}
+
+# ====================================================================
+# PRIOR ESTABLISHED BASELINE IMPORTS
 # ====================================================================
 
 import {
@@ -26,10 +49,6 @@ import {
   to = aws_iam_openid_connect_provider.github
   id = "arn:aws:iam::541495491866:oidc-provider/token.actions.githubusercontent.com"
 }
-
-# ====================================================================
-# MODULE CARTRIDGE INFRASTRUCTURE IMPORTS
-# ====================================================================
 
 import {
   to = module.pilot_medspa.aws_s3_bucket.clinicflow_logs
