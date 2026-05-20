@@ -1,119 +1,123 @@
-resource "aws_s3_bucket" "patient_vault" {
-  # checkov:skip=CKV_AWS_18: "FinOps - Access logging is deferred for initial pilot baseline testing."
-  # checkov:skip=CKV_AWS_144: "FinOps - Cross-region replication for storage log files is cost-prohibitive for lab baseline."
-  # checkov:skip=CKV_AWS_145: "FinOps - Default AES256 encryption profile is fully sufficient for pilot baseline."
-  # checkov:skip=CKV_AWS_21: "False Positive - Storage versioning properties are handled explicitly by the downstream resource block."
-  # checkov:skip=CKV2_AWS_6: "False Positive - S3 Public Access protection blocks are defined via a separate explicit resource below."
-  # checkov:skip=CKV2_AWS_61: "Architecture - Storage lifecycle policies are bypassed for local baseline data collection."
-  # checkov:skip=CKV2_AWS_62: "Architecture - Event notifications are unnecessary for internal storage drop zones."
-  bucket_prefix = "clinicflow-patient-vault-"
-  force_destroy = true
-}
+# ====================================================================
+# SECURE COMPLIANCE INGRESS LAYER - SFTP SERVICE GATEWAY
+# ====================================================================
+resource "aws_transfer_server" "clinicflow_sftp" {
+  identity_provider_type = "SERVICE_MANAGED"
+  logging_role           = aws_iam_role.sftp_logging_role.arn
+  protocols              = ["SFTP"]
 
-resource "aws_s3_bucket_versioning" "patient_vault_versioning" {
-  bucket = aws_s3_bucket.patient_vault.id
-  versioning_configuration {
-    status = "Enabled"
+  tags = {
+    Name        = "ClinicFlow-SFTP-Gateway"
+    Environment = "Production"
   }
-}
-
-resource "aws_s3_bucket_public_access_block" "patient_vault_block" {
-  bucket                  = aws_s3_bucket.patient_vault.id
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
 }
 
 resource "aws_iam_role" "sftp_logging_role" {
   name = "ClinicFlow-SFTP-Logging-Role"
+
   assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Action    = "sts:AssumeRole",
-      Effect    = "Allow",
-      Principal = { Service = "transfer.amazonaws.com" }
-    }]
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "TransferAssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "transfer.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
   })
 }
 
-resource "aws_iam_role_policy_attachment" "sftp_logging_attach" {
-  role       = aws_iam_role.sftp_logging_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSTransferLoggingAccess"
+resource "aws_iam_role_policy" "sftp_logging_policy" {
+  name = "ClinicFlow-SFTP-Logging-Policy"
+  role = aws_iam_role.sftp_logging_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowCloudWatchLogs"
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogStreams"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
 }
 
-resource "aws_transfer_server" "clinicflow_sftp" {
-  # checkov:skip=CKV_AWS_164: "Architecture - Public endpoint required for clinic staff access without corporate VPN software."
-  # checkov:skip=CKV_AWS_380: "Security - Explicitly enforcing standard secure Transfer Family connection security policies."
-  endpoint_type          = "PUBLIC"
-  protocols              = ["SFTP"]
-  identity_provider_type = "SERVICE_MANAGED"
-  logging_role           = aws_iam_role.sftp_logging_role.arn
-  security_policy_name   = "TransferSecurityPolicy-2024-01"
-
-  tags = {
-    Name = "ClinicFlow-Front-Door"
-  }
-}
-
+# ====================================================================
+# CLINICAL USER PROVISIONING & IDENTITY POLICIES
+# ====================================================================
 resource "aws_iam_role" "receptionist_sftp_role" {
   name = "ClinicFlow-Receptionist-SFTP"
+
   assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Action    = "sts:AssumeRole",
-      Effect    = "Allow",
-      Principal = { Service = "transfer.amazonaws.com" }
-    }]
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "TransferUserAssume"
+        Effect = "Allow"
+        Principal = {
+          Service = "transfer.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
   })
 }
 
-resource "aws_iam_role_policy" "receptionist_s3_access" {
-  name = "ClinicFlow-Receptionist-S3-Policy"
+resource "aws_iam_role_policy" "receptionist_sftp_policy" {
+  name = "ClinicFlow-Receptionist-SFTP-Policy"
   role = aws_iam_role.receptionist_sftp_role.id
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "AllowListingOfVault"
+        Sid    = "AllowS3HomeDirectoryAccess"
         Effect = "Allow"
         Action = [
           "s3:ListBucket",
           "s3:GetBucketLocation"
         ]
-        Resource = aws_s3_bucket.patient_vault.arn
+        Resource = ["arn:aws:s3:::clinicflow-patient-vault-541495491866"]
       },
       {
-        Sid    = "AllowReadWriteInDropZone"
+        Sid    = "AllowS3ObjectManipulation"
         Effect = "Allow"
         Action = [
           "s3:PutObject",
           "s3:GetObject",
-          "s3:DeleteObjectVersion",
-          "s3:DeleteObject"
+          "s3:DeleteObject",
+          "s3:GetObjectVersion"
         ]
-        Resource = "${aws_s3_bucket.patient_vault.arn}/*"
+        Resource = ["arn:aws:s3:::clinicflow-patient-vault-541495491866/*"]
+      },
+      {
+        Sid    = "AllowKMSCryptographicHandshake"
+        Effect = "Allow"
+        Action = [
+          "kms:Encrypt",
+          "kms:Decrypt",
+          "kms:ReEncrypt*",
+          "kms:GenerateDataKey*",
+          "kms:DescribeKey"
+        ]
+        Resource = ["*"]
       }
     ]
   })
 }
 
-resource "aws_transfer_user" "frontdesk_user" {
+resource "aws_transfer_user" "receptionist" {
   server_id      = aws_transfer_server.clinicflow_sftp.id
-  user_name      = "frontdesk"
+  user_name      = "clinic-receptionist"
   role           = aws_iam_role.receptionist_sftp_role.arn
-  home_directory = "/${aws_s3_bucket.patient_vault.id}/"
-}
-resource "aws_s3_bucket_server_side_encryption_configuration" "patient_vault_encryption" {
-  bucket = aws_s3_bucket.patient_vault.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      # FIXED: Transitions vault from multi-tenant SSE-S3 to dedicated SSE-KMS CMK
-      kms_master_key_id = aws_kms_key.clinicflow_cmk.arn
-      sse_algorithm     = "aws:kms"
-    }
-    bucket_key_enabled = true # FinOps Option: Reduces KMS API call overhead by 99% safely
-  }
+  home_directory = "/clinicflow-patient-vault-541495491866/intake-dropzone"
 }
