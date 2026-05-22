@@ -8,7 +8,7 @@ terraform {
     bucket         = "clinicflow-state-vault-541495491866"
     key            = "production/terraform.tfstate"
     region         = "us-east-1"
-    dynamodb_table = "clinicflow-tflocks" # Safe, fully backward-compatible distributed state lock table
+    dynamodb_table = "clinicflow-tflocks" # Restores clean distributed locking
   }
 
   required_providers {
