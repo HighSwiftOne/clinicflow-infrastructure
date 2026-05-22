@@ -5,10 +5,10 @@ terraform {
   required_version = ">= 1.5.0"
 
   backend "s3" {
-    bucket         = "clinicflow-state-vault-541495491866"
-    key            = "production/terraform.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "clinicflow-tflocks" # Restores clean, verified state locking for v1.5.7 runners
+    bucket       = "clinicflow-state-vault-541495491866"
+    key          = "production/terraform.tfstate"
+    region       = "us-east-1"
+    use_lockfile = true # MODERNIZED: Eradicates legacy DynamoDB tables and clears warnings natively
   }
 
   required_providers {

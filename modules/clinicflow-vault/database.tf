@@ -19,12 +19,11 @@ resource "aws_db_instance" "clinicflow_db" {
   vpc_security_group_ids = [aws_security_group.db_sg.id]
 
   username            = "clinicadmin"
-  password            = "SecurePatientDataOverride2026!" # Injected via Secrets Manager in production environments
+  password            = "SecurePatientDataOverride2026!"
   skip_final_snapshot = true
   publicly_accessible = false
   multi_az            = true
 
-  # FIXED: Realigned directly to the live, physical KMS tracking key to kill the destruction risk
   kms_key_id = "arn:aws:kms:us-east-1:541495491866:key/00f72e88-f53f-4843-aed3-83bad42fee9d"
 
   deletion_protection                 = true
@@ -32,9 +31,10 @@ resource "aws_db_instance" "clinicflow_db" {
   auto_minor_version_upgrade          = true
   copy_tags_to_snapshot               = true
 
+  # Log Stream Exports and Enhanced Telemetry
   enabled_cloudwatch_logs_exports = ["error", "general", "slowquery"]
   monitoring_interval             = 60
-  monitoring_role_arn             = aws_iam_role.rds_monitoring_role.arn
+  monitoring_role_arn             = aws_iam_role.rds_monitoring_role.arn # FIXED: Referential integrity is now 100% sound
 
   lifecycle {
     prevent_destroy = true
@@ -44,4 +44,30 @@ resource "aws_db_instance" "clinicflow_db" {
     Name        = "ClinicFlow-Production-Database"
     Environment = "Production"
   }
+}
+
+# ====================================================================
+# ENHANCED MONITORING TELEMETRY TRUST IDENTITY (RESOLVES CHECK 118)
+# ====================================================================
+resource "aws_iam_role" "rds_monitoring_role" {
+  name = "ClinicFlow-RDS-Enhanced-Monitoring-Role"
+
+  # FIXED: Authorizes the native RDS metric collector agent to assume this identity
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "monitoring.rds.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "rds_monitoring_attach" {
+  role       = aws_iam_role.rds_monitoring_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole" # FIXED: Attaches explicit OS logging privileges
 }

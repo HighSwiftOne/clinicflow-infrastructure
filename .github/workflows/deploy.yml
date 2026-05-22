@@ -8,14 +8,13 @@ on:
     branches:
       - main
 
-# FIXED: Natively queues up concurrent commits to prevent multi-runner lock crashes
 concurrency:
   group: tf-state-lock-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
-  id-token: write # Required for secure cryptographic AWS OIDC handshakes
-  contents: read  # Required to checkout your repository files safely
+  id-token: write 
+  contents: read  
 
 jobs:
   terraform-plan:
@@ -34,7 +33,7 @@ jobs:
       - name: Setup Terraform Binary Engine
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.5.7"
+          terraform_version: "1.10.0" # UPGRADED: Forces runner to compile with v1.10.0+ libraries
 
       - name: Initialize Code Base Backend Mapping
         run: terraform init
@@ -65,7 +64,7 @@ jobs:
       - name: Setup Terraform Binary Engine
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.5.7"
+          terraform_version: "1.10.0" # UPGRADED: Forces apply execution tier to match planning engine
 
       - name: Download Verified Build Plan Artifact
         uses: actions/download-artifact@v4
