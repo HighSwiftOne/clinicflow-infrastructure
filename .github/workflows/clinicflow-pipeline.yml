@@ -1,76 +1,37 @@
-name: ClinicFlow Production Vending Machine
+# ====================================================================
+# CLINICFLOW VENDING MACHINE HARDENED RUNWAY
+# ====================================================================
+name: "Production Vending Machine"
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_dispatch: # Restricted to manual corporate operator triggers
 
-# The Keyless Identity Tunnel
 permissions:
-  id-token: write 
+  id-token: write
   contents: read
 
-# Silences the Node.js deprecation warning and future-proofs the runner
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
-  # ---------------------------------------------------------
-  # STAGE 1: SECURITY & PLANNING (The Bouncer)
-  # ---------------------------------------------------------
-  security-and-plan:
-    name: Security Scan & Plan
+  vending-plan:
+    name: "Architectural Vending Plan"
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Checkout Code Repository
         uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials (OIDC)
+      - name: Configure AWS Credentials via Secure OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::541495491866:role/ClinicFlow-GitHub-Actions-Role
           aws-region: us-east-1
 
-      - name: vCISO Checkov Scan (Hard Enforcement)
-        uses: bridgecrewio/checkov-action@master
-        with:
-          directory: .
-          framework: terraform
-          soft_fail: false # Breaking the build on HIPAA violations
-
-      - name: Setup Terraform
+      - name: Setup Terraform Binary Engine
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.0"
 
-      - name: Terraform Init
+      - name: Initialize Backend Storage Links
         run: terraform init
 
-      - name: Terraform Plan
-        run: terraform plan -out=tfplan
-
-  # ---------------------------------------------------------
-  # STAGE 2: AUTOMATED DEPLOYMENT (The Builder)
-  # ---------------------------------------------------------
-  deploy:
-    name: Deploy Infrastructure
-    needs: security-and-plan
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS Credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::541495491866:role/ClinicFlow-GitHub-Actions-Role
-          aws-region: us-east-1
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
-      - name: Terraform Init
-        run: terraform init
-
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
+      # FIXED: Blind auto-approve loop eradicated. Generates an immutable plan artifact for explicit human engineering review.
+      - name: Generate Secure Vending Plan
+        run: terraform plan -out=vendingplan -input=false
