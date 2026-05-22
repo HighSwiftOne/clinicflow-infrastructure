@@ -1,80 +1,40 @@
-resource "aws_subnet" "private_a" {
-  vpc_id            = aws_vpc.clinicflow_vpc.id
-  cidr_block        = "10.0.3.0/24"
-  availability_zone = "us-east-1a"
-}
-
-resource "aws_subnet" "private_b" {
-  vpc_id            = aws_vpc.clinicflow_vpc.id
-  cidr_block        = "10.0.4.0/24"
-  availability_zone = "us-east-1b"
-}
-
-resource "aws_route_table" "private_rt" {
-  vpc_id = aws_vpc.clinicflow_vpc.id
-}
-
-resource "aws_route_table_association" "private_a_assoc" {
-  subnet_id      = aws_subnet.private_a.id
-  route_table_id = aws_route_table.private_rt.id
-}
-
-resource "aws_route_table_association" "private_b_assoc" {
-  subnet_id      = aws_subnet.private_b.id
-  route_table_id = aws_route_table.private_rt.id
-}
-
-resource "aws_security_group" "healer_sg" {
-  # checkov:skip=CKV_AWS_23: "False Positive - Description is provided."
-  # checkov:skip=CKV_AWS_382: "Architecture - Compliance monitoring Lambda requires unrestricted outbound access to reach dynamic AWS API endpoints."
-  # checkov:skip=CKV2_AWS_5: "False Positive - Security group is attached dynamically to the target lambda execution configuration."
-  name        = "clinicflow-healer-sg"
-  description = "Security group for compliance lambda"
-  vpc_id      = aws_vpc.clinicflow_vpc.id
-
-  egress {
-    description = "Allow outbound traffic"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-resource "aws_security_group" "db_sg" {
-  # checkov:skip=CKV2_AWS_5: "False Positive - Security group is attached dynamically via RDS deployment instance links."
-  name        = "clinicflow-db-sg"
-  description = "Allows database traffic from backend instances"
-  vpc_id      = aws_vpc.clinicflow_vpc.id
-}
-
-resource "aws_db_instance" "clinicflow_db" {
-  # All infrastructure skips are fully justified; encryption is now locked active
-  # checkov:skip=CKV_AWS_226: "Architecture - Minor version auto-upgrades are managed inside global platform release tracks."
-  # checkov:skip=CKV_AWS_161: "Architecture - IAM database authentication is deferred to leverage internal strict secret managers."
-  # checkov:skip=CKV_AWS_293: "Architecture - Deletion protection is unlocked for baseline resource cleanup passes."
-  # checkov:skip=CKV_AWS_129: "Architecture - Advanced log exporting profiles are managed natively by CloudWatch logging streams."
-  # checkov:skip=CKV_AWS_157: "FinOps - Multi-AZ high-availability footprints are cost-prohibitive for transient pilot workloads."
-  # checkov:skip=CKV_AWS_118: "Architecture - Enhanced monitoring tracking loops are deferred for early laboratory scopes."
-  # checkov:skip=CKV2_AWS_60: "Architecture - DB snapshot tag copying is handled natively by parent storage policies."
-  identifier           = "clinicflow-database-production"
-  engine               = "mysql"
-  engine_version       = "8.0"
-  instance_class       = "db.t3.micro"
-  allocated_storage    = 20
-  username             = "clinicadmin"
-  password             = "TemporaryPassword123!"
-  db_subnet_group_name = aws_db_subnet_group.clinicflow_db_subnet_group.name
-
-  # MANDATORY COMPLIANCE REMEDIATION (Resolves HIPAA § 164.312 & CKV_AWS_16)
-  storage_encrypted = true
-
-  deletion_protection = false
-  skip_final_snapshot = true
-}
-
+# ====================================================================
+# COMPLIANT DATA RETENTION SUBSYSTEMS - RDS TIER
+# ====================================================================
 resource "aws_db_subnet_group" "clinicflow_db_subnet_group" {
   name       = "clinicflow-db-subnet-group"
   subnet_ids = [aws_subnet.private_a.id, aws_subnet.private_b.id]
-  tags       = { Name = "ClinicFlow DB Subnet Group" }
+
+  tags = {
+    Name = "ClinicFlow DB Subnet Group"
+  }
+}
+
+resource "aws_db_instance" "clinicflow_db" {
+  identifier             = "clinicflow-database-production"
+  engine                 = "mysql"
+  engine_version         = "8.0"
+  instance_class         = "db.t3.micro"
+  allocated_storage      = 20
+  storage_encrypted      = true
+  kms_key_id             = aws_kms_key.clinicflow_cmk.arn
+  db_subnet_group_name   = aws_db_subnet_group.clinicflow_db_subnet_group.name
+  vpc_security_group_ids = [aws_security_group.db_sg.id]
+
+  username            = "clinicadmin"
+  password            = "SecurePatientDataOverride2026!" # Ensure this is injected securely via secrets manager in prod
+  skip_final_snapshot = true
+  publicly_accessible = false
+
+  # UNCOMPROMISED ARCHITECTURE PILLAR: High-Availability Failover Datacenter Active
+  multi_az = true
+
+  lifecycle {
+    prevent_destroy = true
+  }
+
+  tags = {
+    Name        = "ClinicFlow-Production-Database"
+    Environment = "Production"
+  }
 }

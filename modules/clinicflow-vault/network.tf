@@ -12,9 +12,6 @@ resource "aws_vpc" "clinicflow_vpc" {
   }
 }
 
-# ====================================================================
-# DEFAULT SECURITY GROUP RECONCILIATION
-# ====================================================================
 resource "aws_default_security_group" "default" {
   vpc_id = aws_vpc.clinicflow_vpc.id
 
@@ -83,7 +80,6 @@ resource "aws_iam_role_policy" "vpc_flow_log_policy" {
 # ====================================================================
 # PERIMETER INTERNET ROUTING GATEWAY
 # ====================================================================
-# FIXED: Invalid ID argument removed to adhere to declarative HCL resource schemas
 resource "aws_internet_gateway" "clinicflow_igw" {
   vpc_id = aws_vpc.clinicflow_vpc.id
 
@@ -108,7 +104,7 @@ resource "aws_route_table" "public_rt" {
 }
 
 # ====================================================================
-# SUB NETWORKING LAYOUTS (PUBLIC TIER TIGHTENED)
+# SUB NETWORKING LAYOUTS
 # ====================================================================
 resource "aws_subnet" "public_a" {
   vpc_id                  = aws_vpc.clinicflow_vpc.id
@@ -128,6 +124,24 @@ resource "aws_subnet" "public_b" {
   tags = { Name = "ClinicFlow-Public-Subnet-B" }
 }
 
+resource "aws_subnet" "private_a" {
+  vpc_id                  = aws_vpc.clinicflow_vpc.id
+  cidr_block              = "10.0.3.0/24"
+  availability_zone       = "us-east-1a"
+  map_public_ip_on_launch = false
+
+  tags = { Name = "ClinicFlow-Private-Subnet-A" }
+}
+
+resource "aws_subnet" "private_b" {
+  vpc_id                  = aws_vpc.clinicflow_vpc.id
+  cidr_block              = "10.0.4.0/24"
+  availability_zone       = "us-east-1b"
+  map_public_ip_on_launch = false
+
+  tags = { Name = "ClinicFlow-Private-Subnet-B" }
+}
+
 resource "aws_route_table_association" "public_a_assoc" {
   subnet_id      = aws_subnet.public_a.id
   route_table_id = aws_route_table.public_rt.id
@@ -136,4 +150,82 @@ resource "aws_route_table_association" "public_a_assoc" {
 resource "aws_route_table_association" "public_b_assoc" {
   subnet_id      = aws_subnet.public_b.id
   route_table_id = aws_route_table.public_rt.id
+}
+
+resource "aws_route_table_association" "private_a_assoc" {
+  subnet_id      = aws_subnet.private_a.id
+  route_table_id = aws_route_table.private_rt.id
+}
+
+resource "aws_route_table_association" "private_b_assoc" {
+  subnet_id      = aws_subnet.private_b.id
+  route_table_id = aws_route_table.private_rt.id
+}
+
+resource "aws_route_table" "private_rt" {
+  vpc_id = aws_vpc.clinicflow_vpc.id
+
+  tags = {
+    Name        = "ClinicFlow-Private-RouteTable"
+    Environment = "Production"
+  }
+}
+
+# ====================================================================
+# LAYER 4 FIREWALL SECURITY GROUPS (ALIGNED WITH LIVE STATE)
+# ====================================================================
+resource "aws_security_group" "web_sg" {
+  # FIXED: Realigned description and name inputs to match live imported metadata, blocking re-creation
+  name        = "clinicflow-web-sg"
+  description = "Allows public traffic to ALB"
+  vpc_id      = aws_vpc.clinicflow_vpc.id
+
+  ingress {
+    description = "Allow secure encrypted HTTPS traffic from public endpoints"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Allow standard HTTP traffic for secure TLS enforcement redirection loops"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description     = "Harden Ingress Infiltration - Outbound traffic restricted strictly to internal compute tasks"
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.healer_sg.id]
+  }
+
+  tags = {
+    Name        = "ClinicFlow-ALB-SecurityGroup"
+    Environment = "Production"
+  }
+}
+
+resource "aws_security_group" "healer_sg" {
+  name        = "clinicflow-healer-sg"
+  description = "Security group for compliance lambda"
+  vpc_id      = aws_vpc.clinicflow_vpc.id
+
+  egress {
+    description = "Allow outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_security_group" "db_sg" {
+  name        = "clinicflow-db-sg"
+  description = "Allows database traffic from backend instances"
+  vpc_id      = aws_vpc.clinicflow_vpc.id
 }
