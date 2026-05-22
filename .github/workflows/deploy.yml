@@ -1,0 +1,76 @@
+# ====================================================================
+# CLINICFLOW ELITE GITOPS TWO-PHASE PRODUCTION RUNWAY
+# ====================================================================
+name: "ClinicFlow Continuous Integration & Deployment"
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write # Required for secure cryptographic AWS OIDC handshakes
+  contents: read  # Required to checkout your repository files safely
+
+jobs:
+  terraform-plan:
+    name: "1. Architectural Security & Planning Pass"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials via Secure OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::541495491866:role/ClinicFlow-GitHub-Actions-Role
+          aws-region: us-east-1
+
+      - name: Setup Terraform Binary Engine
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.7"
+
+      - name: Initialize Code Base Backend Mapping
+        run: terraform init
+
+      - name: Generate Immutable Execution Plan Artifact
+        run: terraform plan -out=tfplan -input=false
+
+      # FIXED: Saves the binary plan as a locked artifact to kill the amnesia blast radius
+      - name: Archive Verified Build Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: structural-tfplan
+          path: tfplan
+
+  terraform-apply:
+    name: "2. Authorized Human-In-The-Loop Production Apply"
+    needs: terraform-plan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials via Secure OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::541495491866:role/ClinicFlow-GitHub-Actions-Role
+          aws-region: us-east-1
+
+      - name: Setup Terraform Binary Engine
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.7"
+
+      - name: Download Verified Build Plan Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: structural-tfplan
+
+      - name: Initialize Backend Storage Links
+        run: terraform init
+
+      # FIXED: Blind -auto-approve loop killed. Only executes the pre-reviewed, frozen plan artifact.
+      - name: Execute Validated Plan
+        run: terraform apply tfplan
