@@ -8,10 +8,10 @@ import {
   id = "vpc-0867358f77f706712"
 }
 
-# 2. PERIMETER NETWORK INTERNET ROUTING GATEWAY
+# 2. PERIMETER NETWORK INTERNET ROUTING GATEWAY (RECONCILED)
 import {
   to = module.pilot_medspa.aws_internet_gateway.clinicflow_igw
-  id = "igw-0ab1b8086481499dc"
+  id = "igw-0f388bac1226c68f4" # FIXED: Map to your active physical gateway ID
 }
 
 # 3. LAYER 3 SUBNET ROUTING FABRIC MAPPINGS
@@ -79,4 +79,15 @@ import {
 import {
   to = module.pilot_medspa.aws_db_instance.clinicflow_db
   id = "clinicflow-database-production"
+}
+
+# 10. ROUTE TABLE ASSOCIATION ALIGNMENTS (RECONCILED)
+import {
+  to = module.pilot_medspa.aws_route_table_association.private_a_assoc
+  id = "subnet-0965fcc0cbcdd1339/rtb-08adfc8fe51cd0a29" # FIXED: Formatted as SUBNET_ID/ROUTE_TABLE_ID using your live active table
+}
+
+import {
+  to = module.pilot_medspa.aws_route_table_association.private_b_assoc
+  id = "subnet-068d2f33719fb834d/rtb-08adfc8fe51cd0a29" # FIXED: Formatted as SUBNET_ID/ROUTE_TABLE_ID using your live active table
 }
