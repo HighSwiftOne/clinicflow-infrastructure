@@ -15,7 +15,6 @@ resource "aws_db_instance" "clinicflow_db" {
   instance_class         = "db.t3.micro"
   allocated_storage      = 20
   storage_encrypted      = true
-  kms_key_id             = aws_kms_key.clinicflow_cmk.arn
   db_subnet_group_name   = aws_db_subnet_group.clinicflow_db_subnet_group.name
   vpc_security_group_ids = [aws_security_group.db_sg.id]
 
@@ -25,17 +24,16 @@ resource "aws_db_instance" "clinicflow_db" {
   publicly_accessible = false
   multi_az            = true
 
-  # ====================================================================
-  # ENTERPRISE SECURITY & AUDIT COMPLIANCE BASIGNAL
-  # ====================================================================
-  deletion_protection                 = true # FIXED: Enforces platform-level deletion protection gate (Resolves CKV_AWS_293)
-  iam_database_authentication_enabled = true # FIXED: Activates cryptographic IAM database login tracking (Resolves CKV_AWS_161)
-  auto_minor_version_upgrade          = true # FIXED: Automates minor software patch updates natively (Resolves CKV_AWS_226)
-  copy_tags_to_snapshot               = true # FIXED: Preserves context across point-in-time data snapshots (Resolves CKV2_AWS_60)
+  # FIXED: Realigned directly to the live, physical KMS tracking key to kill the destruction risk
+  kms_key_id = "arn:aws:kms:us-east-1:541495491866:key/00f72e88-f53f-4843-aed3-83bad42fee9d"
 
-  # Log Stream Exports and Enhanced Telemetry
-  enabled_cloudwatch_logs_exports = ["error", "general", "slowquery"] # FIXED: Routes engine audit records to CloudWatch (Resolves CKV_AWS_129)
-  monitoring_interval             = 60                                # FIXED: Enables real-time infrastructure performance scanning (Resolves CKV_AWS_118)
+  deletion_protection                 = true
+  iam_database_authentication_enabled = true
+  auto_minor_version_upgrade          = true
+  copy_tags_to_snapshot               = true
+
+  enabled_cloudwatch_logs_exports = ["error", "general", "slowquery"]
+  monitoring_interval             = 60
   monitoring_role_arn             = aws_iam_role.rds_monitoring_role.arn
 
   lifecycle {
@@ -46,27 +44,4 @@ resource "aws_db_instance" "clinicflow_db" {
     Name        = "ClinicFlow-Production-Database"
     Environment = "Production"
   }
-}
-
-# ====================================================================
-# ENHANCED MONITORING TELEMETRY ACCOUNT PRIVILEGES
-# ====================================================================
-resource "aws_iam_role" "rds_monitoring_role" {
-  name = "ClinicFlow-RDS-Enhanced-Monitoring-Role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect    = "Allow"
-        Principal = { Service = "monitoring.rds.amazonaws.com" }
-        Action    = "sts:AssumeRole"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "rds_monitoring_attach" {
-  role       = aws_iam_role.rds_monitoring_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
 }
