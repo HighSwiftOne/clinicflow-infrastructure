@@ -11,19 +11,19 @@ import {
 # 2. APPLICATION HARDENED LOAD BALANCER COMPUTE TIER
 import {
   to = module.pilot_medspa.aws_lb.clinicflow_alb
-  id = "arn:aws:elasticloadbalancing:us-east-1:541495491866:loadbalancer/app/ClinicFlow-ALB/800e071bd03a2dda" # FIXED: Linked to your verified active ALB handle
+  id = "arn:aws:elasticloadbalancing:us-east-1:541495491866:loadbalancer/app/ClinicFlow-ALB/800e071bd03a2dda"
 }
 
 # 3. CORE INSTANCE APPLICATION AUTO-SCALING LAUNCH TEMPLATE
 import {
   to = module.pilot_medspa.aws_launch_template.clinicflow_lt
-  id = "lt-083ea4f2e968f4d2a"
+  id = "lt-090aefb0ef76eaf63" # FIXED: Welded to your live, active launch template handle
 }
 
 # 4. COMPLIANT AUDIT IMAGE BUILDER FACTORY CONFIGURATION
 import {
   to = module.pilot_medspa.aws_imagebuilder_infrastructure_configuration.clinicflow_infra
-  id = "arn:aws:imagebuilder:us-east-1:541495491866:infrastructureconfiguration/clinicflow_infra"
+  id = "arn:aws:imagebuilder:us-east-1:541495491866:infrastructure-configuration/clinicflow_infra" # FIXED: Corrected hyphenated service namespace path format
 }
 
 # 5. SERVER-SIDE DATABASE RETENTION SUBNET GROUP
