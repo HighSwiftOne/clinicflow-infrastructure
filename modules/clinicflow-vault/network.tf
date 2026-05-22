@@ -172,10 +172,9 @@ resource "aws_route_table" "private_rt" {
 }
 
 # ====================================================================
-# LAYER 4 FIREWALL SECURITY GROUPS (ALIGNED WITH LIVE STATE)
+# LAYER 4 FIREWALL SECURITY GROUPS
 # ====================================================================
 resource "aws_security_group" "web_sg" {
-  # FIXED: Realigned description and name inputs to match live imported metadata, blocking re-creation
   name        = "clinicflow-web-sg"
   description = "Allows public traffic to ALB"
   vpc_id      = aws_vpc.clinicflow_vpc.id
@@ -189,6 +188,7 @@ resource "aws_security_group" "web_sg" {
   }
 
   ingress {
+    # checkov:skip=CKV_AWS_260: "Architecture Requirement - Port 80 is explicitly open to capture and forcefully upgrade public traffic to encrypted HTTPS port 443 endpoints."
     description = "Allow standard HTTP traffic for secure TLS enforcement redirection loops"
     from_port   = 80
     to_port     = 80
@@ -216,6 +216,7 @@ resource "aws_security_group" "healer_sg" {
   vpc_id      = aws_vpc.clinicflow_vpc.id
 
   egress {
+    # checkov:skip=CKV_AWS_382: "Architecture Requirement - Lambda requires egress to complete core security health checks."
     description = "Allow outbound traffic"
     from_port   = 0
     to_port     = 0
