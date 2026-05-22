@@ -8,6 +8,11 @@ on:
     branches:
       - main
 
+# FIXED: Natively queues up concurrent commits to prevent multi-runner lock crashes
+concurrency:
+  group: tf-state-lock-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   id-token: write # Required for secure cryptographic AWS OIDC handshakes
   contents: read  # Required to checkout your repository files safely
@@ -37,7 +42,6 @@ jobs:
       - name: Generate Immutable Execution Plan Artifact
         run: terraform plan -out=tfplan -input=false
 
-      # FIXED: Saves the binary plan as a locked artifact to kill the amnesia blast radius
       - name: Archive Verified Build Plan
         uses: actions/upload-artifact@v4
         with:
@@ -71,6 +75,5 @@ jobs:
       - name: Initialize Backend Storage Links
         run: terraform init
 
-      # FIXED: Blind -auto-approve loop killed. Only executes the pre-reviewed, frozen plan artifact.
       - name: Execute Validated Plan
         run: terraform apply tfplan
