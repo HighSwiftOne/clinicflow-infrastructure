@@ -8,10 +8,10 @@ import {
   id = "vpc-0867358f77f706712"
 }
 
-# 2. PERIMETER NETWORK INTERNET ROUTING GATEWAY (RECONCILED)
+# 2. PERIMETER NETWORK INTERNET ROUTING GATEWAY
 import {
   to = module.pilot_medspa.aws_internet_gateway.clinicflow_igw
-  id = "igw-0f388bac1226c68f4" # FIXED: Map to your active physical gateway ID
+  id = "igw-0f388bac1226c68f4" 
 }
 
 # 3. LAYER 3 SUBNET ROUTING FABRIC MAPPINGS
@@ -62,5 +62,4 @@ import {
 import {
   to = module.pilot_medspa.aws_db_subnet_group.clinicflow_db_subnet_group
   id = "clinicflow-db-subnet-group"
-}# Final Zero-Drift Sync Complete: 2026-05-22
-# Verification Pass: 2026-05-22
+}# Network Boundary Synchronization Override
