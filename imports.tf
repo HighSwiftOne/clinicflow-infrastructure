@@ -8,10 +8,10 @@ import {
   id = "vpc-0867358f77f706712"
 }
 
-# 2. PERIMETER NETWORK INTERNET ROUTING GATEWAY
+# 2. PERIMETER NETWORK INTERNET ROUTING GATEWAY (RECONCILED)
 import {
   to = module.pilot_medspa.aws_internet_gateway.clinicflow_igw
-  id = "igw-0ab1b8086481499dc"
+  id = "igw-0f388bac1226c68f4" # FIXED: Map to your active physical gateway ID
 }
 
 # 3. LAYER 3 SUBNET ROUTING FABRIC MAPPINGS
@@ -38,12 +38,7 @@ import {
 # 4. LAYER 4 FIREWALL SECURITY GROUPS
 import {
   to = module.pilot_medspa.aws_security_group.web_sg
-  id = "sg-0c383a377dbbef6fa"
-}
-
-import {
-  to = module.pilot_medspa.aws_security_group.healer_sg
-  id = "sg-07da5378daeb9b2db"
+  id = "sg-0cb5078ab8b733e59"
 }
 
 import {
@@ -57,26 +52,14 @@ import {
   id = "arn:aws:elasticloadbalancing:us-east-1:541495491866:loadbalancer/app/ClinicFlow-ALB/800e071bd03a2dda"
 }
 
-# 6. CORE INSTANCE APPLICATION AUTO-SCALING LAUNCH TEMPLATE
+# 6. PRODUCTION DATABASE INSTANCE ADOPTION
 import {
-  to = module.pilot_medspa.aws_launch_template.clinicflow_lt
-  id = "lt-090aefb0ef76eaf63"
+  to = module.pilot_medspa.aws_db_instance.clinicflow_db
+  id = "clinicflow-database-production"
 }
 
 # 7. SERVER-SIDE DATABASE RETENTION SUBNET GROUP
 import {
   to = module.pilot_medspa.aws_db_subnet_group.clinicflow_db_subnet_group
   id = "clinicflow-db-subnet-group"
-}
-
-# 8. SECURITY AUTOMATION POLICY PERMISSIONS
-import {
-  to = module.pilot_medspa.aws_lambda_permission.allow_eventbridge
-  id = "ClinicFlow-S3-Healer/AllowExecutionFromEventBridge"
-}
-
-# 9. PRODUCTION DATABASE INSTANCE ADOPTION
-import {
-  to = module.pilot_medspa.aws_db_instance.clinicflow_db
-  id = "db-LOMYBPPO7SUDALTOQRCLJQWGTY" # FIXED: Re-mapped to match your active live physical resource ID string from log
 }
