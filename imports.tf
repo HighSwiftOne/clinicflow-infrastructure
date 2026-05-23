@@ -8,10 +8,10 @@ import {
   id = "vpc-0867358f77f706712"
 }
 
-# 2. PERIMETER NETWORK INTERNET ROUTING GATEWAY (RECONCILED)
+# 2. PERIMETER NETWORK INTERNET ROUTING GATEWAY
 import {
   to = module.pilot_medspa.aws_internet_gateway.clinicflow_igw
-  id = "igw-0f388bac1226c68f4" # FIXED: Map to your active physical gateway ID
+  id = "igw-0ab1b8086481499dc"
 }
 
 # 3. LAYER 3 SUBNET ROUTING FABRIC MAPPINGS
@@ -38,7 +38,7 @@ import {
 # 4. LAYER 4 FIREWALL SECURITY GROUPS
 import {
   to = module.pilot_medspa.aws_security_group.web_sg
-  id = "sg-0cb5078ab8b733e59"
+  id = "sg-0c383a377dbbef6fa"
 }
 
 import {
@@ -78,16 +78,5 @@ import {
 # 9. PRODUCTION DATABASE INSTANCE ADOPTION
 import {
   to = module.pilot_medspa.aws_db_instance.clinicflow_db
-  id = "clinicflow-database-production"
-}
-
-# 10. ROUTE TABLE ASSOCIATION ALIGNMENTS (RECONCILED)
-import {
-  to = module.pilot_medspa.aws_route_table_association.private_a_assoc
-  id = "subnet-0965fcc0cbcdd1339/rtb-08adfc8fe51cd0a29" # FIXED: Formatted as SUBNET_ID/ROUTE_TABLE_ID using your live active table
-}
-
-import {
-  to = module.pilot_medspa.aws_route_table_association.private_b_assoc
-  id = "subnet-068d2f33719fb834d/rtb-08adfc8fe51cd0a29" # FIXED: Formatted as SUBNET_ID/ROUTE_TABLE_ID using your live active table
+  id = "db-LOMYBPPO7SUDALTOQRCLJQWGTY" # FIXED: Re-mapped to match your active live physical resource ID string from log
 }
