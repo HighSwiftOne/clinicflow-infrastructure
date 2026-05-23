@@ -35,7 +35,7 @@ import {
   id = "subnet-068d2f33719fb834d"
 }
 
-# 4. LAYER 4 FIREWALL SECURITY GROUPS (RECONCILED)
+# 4. LAYER 4 FIREWALL SECURITY GROUPS
 import {
   to = module.pilot_medspa.aws_security_group.web_sg
   id = "sg-0c383a377dbbef6fa"
@@ -57,7 +57,7 @@ import {
   id = "arn:aws:elasticloadbalancing:us-east-1:541495491866:loadbalancer/app/ClinicFlow-ALB/800e071bd03a2dda"
 }
 
-# 6. APPLICATION ROUTING TARGET GROUP (RECONCILED)
+# 6. APPLICATION ROUTING TARGET GROUP
 import {
   to = module.pilot_medspa.aws_lb_target_group.clinicflow_tg
   id = "arn:aws:elasticloadbalancing:us-east-1:541495491866:targetgroup/ClinicFlow-TargetGroup/a39fa0a9aae1d6e0"
@@ -79,8 +79,4 @@ import {
 import {
   to = module.pilot_medspa.aws_transfer_server.clinicflow_sftp
   id = "s-1b83a4f0a9d140a4a"
-} # Production Network Reconciled: 2026-05-23
-# Final Compilation Override: 2026-05-23
-# Structural Validation Reconciled: 2026-05-23
-# Architectural Alignment Reconciled: 2026-05-23
-# Syntax Validation Reconciled: 2026-05-23
+} # Namespace Scope Alignment: 2026-05-23
