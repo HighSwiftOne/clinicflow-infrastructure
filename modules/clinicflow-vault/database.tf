@@ -47,7 +47,7 @@ resource "aws_db_instance" "clinicflow_db" {
 }
 
 # ====================================================================
-# ENHANCED MONITORING TELEMETRY TRUST IDENTITY (RESOLVES CHECK 118)
+# ENHANCED MONITORING TELEMETRY TRUST IDENTITY
 # ====================================================================
 resource "aws_iam_role" "rds_monitoring_role" {
   name = "ClinicFlow-RDS-Enhanced-Monitoring-Role"

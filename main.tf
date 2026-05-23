@@ -31,6 +31,7 @@ provider "aws" {
 # ====================================================================
 module "pilot_medspa" {
   source = "./modules/clinicflow-vault"
+}
 
   # Core network variables being passed into the module namespace
   vpc_id             = "vpc-0867358f77f706712"
