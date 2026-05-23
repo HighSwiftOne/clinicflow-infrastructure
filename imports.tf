@@ -11,7 +11,7 @@ import {
 # 2. PERIMETER NETWORK INTERNET ROUTING GATEWAY
 import {
   to = module.pilot_medspa.aws_internet_gateway.clinicflow_igw
-  id = "igw-0f388bac1226c68f4"
+  id = "igw-0ab1b8086481499dc"
 }
 
 # 3. LAYER 3 SUBNET ROUTING FABRIC MAPPINGS
@@ -60,7 +60,7 @@ import {
 # 6. APPLICATION ROUTING TARGET GROUP
 import {
   to = module.pilot_medspa.aws_lb_target_group.clinicflow_tg
-  id = "arn:aws:elasticloadbalancing:us-east-1:541495491866:targetgroup/ClinicFlow-TargetGroup/a39fa0a9aae1d6e0"
+  id = "arn:aws:elasticloadbalancing:us-east-1:541495491866:targetgroup/ClinicFlow-TargetGroup/a2a47328fd71adf2"
 }
 
 # 7. PRODUCTION DATABASE INSTANCE ADOPTION
@@ -79,4 +79,4 @@ import {
 import {
   to = module.pilot_medspa.aws_transfer_server.clinicflow_sftp
   id = "s-1b83a4f0a9d140a4a"
-}# Database SG Declared Natively: 2026-05-23
+}# State Reconciliation Complete: 2026-05-23
