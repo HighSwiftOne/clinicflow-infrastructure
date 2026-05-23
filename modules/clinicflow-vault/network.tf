@@ -151,62 +151,21 @@ resource "aws_route_table" "private_rt" {
   }
 }
 
+# Public Subnet Routing Tables Associations
+resource "aws_route_table_association" "public_a_assoc" {
+  subnet_id      = aws_subnet.public_a.id
+  route_table_id = aws_route_table.public_rt.id
+}
+
+resource "aws_route_table_association" "public_b_assoc" {
+  subnet_id      = aws_subnet.public_b.id
+  route_table_id = aws_route_table.public_rt.id
+}
+
 # ====================================================================
 # LAYER 4 FIREWALL SECURITY GROUPS
 # ====================================================================
 resource "aws_security_group" "web_sg" {
   name        = "clinicflow-web-sg"
   description = "Allows public traffic to ALB"
-  vpc_id      = aws_vpc.clinicflow_vpc.id
-
-  ingress {
-    description = "Allow secure encrypted HTTPS traffic from public endpoints"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    # checkov:skip=CKV_AWS_260: "Architecture Requirement - Port 80 is explicitly open to capture and forcefully upgrade public traffic to encrypted HTTPS port 443 endpoints."
-    description = "Allow standard HTTP traffic for secure TLS enforcement redirection loops"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    description     = "Harden Ingress Infiltration - Outbound traffic restricted strictly to internal compute tasks"
-    from_port       = 80
-    to_port         = 80
-    protocol        = "tcp"
-    security_groups = [aws_security_group.healer_sg.id]
-  }
-
-  tags = {
-    Name        = "ClinicFlow-ALB-SecurityGroup"
-    Environment = "Production"
-  }
-}
-
-resource "aws_security_group" "healer_sg" {
-  name        = "clinicflow-healer-sg"
-  description = "Security group for compliance lambda"
-  vpc_id      = aws_vpc.clinicflow_vpc.id
-
-  egress {
-    # checkov:skip=CKV_AWS_382: "Architecture Requirement - Lambda requires egress to complete core security health checks."
-    description = "Allow outbound traffic"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-resource "aws_security_group" "db_sg" {
-  name        = "clinicflow-db-sg"
-  description = "Allows database traffic from backend instances"
-  vpc_id      = aws_vpc.clinicflow_vpc.id
-}
+  vpc
