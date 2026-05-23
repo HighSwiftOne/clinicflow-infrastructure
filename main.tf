@@ -31,4 +31,9 @@ provider "aws" {
 # ====================================================================
 module "pilot_medspa" {
   source = "./modules/clinicflow-vault"
+
+  # Core network variables being passed into the module namespace
+  vpc_id             = "vpc-0867358f77f706712"
+  db_security_group  = "sg-033cffc58e84d62df" # Extracted from your live AWS data table
+  web_security_group = "sg-0c383a377dbbef6fa" # Extracted from your live AWS data table
 }

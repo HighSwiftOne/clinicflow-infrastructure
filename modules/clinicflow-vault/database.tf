@@ -34,7 +34,7 @@ resource "aws_db_instance" "clinicflow_db" {
   # Log Stream Exports and Enhanced Telemetry
   enabled_cloudwatch_logs_exports = ["error", "general", "slowquery"]
   monitoring_interval             = 60
-  monitoring_role_arn             = aws_iam_role.rds_monitoring_role.arn # FIXED: Referential integrity is now 100% sound
+  monitoring_role_arn             = aws_iam_role.rds_monitoring_role.arn
 
   lifecycle {
     prevent_destroy = true
@@ -52,7 +52,6 @@ resource "aws_db_instance" "clinicflow_db" {
 resource "aws_iam_role" "rds_monitoring_role" {
   name = "ClinicFlow-RDS-Enhanced-Monitoring-Role"
 
-  # FIXED: Authorizes the native RDS metric collector agent to assume this identity
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -69,5 +68,5 @@ resource "aws_iam_role" "rds_monitoring_role" {
 
 resource "aws_iam_role_policy_attachment" "rds_monitoring_attach" {
   role       = aws_iam_role.rds_monitoring_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole" # FIXED: Attaches explicit OS logging privileges
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
 }
