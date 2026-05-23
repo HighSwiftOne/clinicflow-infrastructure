@@ -221,4 +221,3 @@ resource "aws_security_group" "healer_sg" {
   }
 }
 
-resource "aws_
