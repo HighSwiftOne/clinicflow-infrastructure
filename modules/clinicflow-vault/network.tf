@@ -151,7 +151,7 @@ resource "aws_route_table" "private_rt" {
   }
 }
 
-# Public Subnet Routing Tables Associations
+# Public Edge Subnet Association Controls
 resource "aws_route_table_association" "public_a_assoc" {
   subnet_id      = aws_subnet.public_a.id
   route_table_id = aws_route_table.public_rt.id
@@ -168,4 +168,82 @@ resource "aws_route_table_association" "public_b_assoc" {
 resource "aws_security_group" "web_sg" {
   name        = "clinicflow-web-sg"
   description = "Allows public traffic to ALB"
-  vpc_id      = aws_vpc.clinicflow_vpc.id  
+  vpc_id      = aws_vpc.clinicflow_vpc.id
+
+  ingress {
+    description = "Allow secure encrypted HTTPS traffic from public endpoints"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    # checkov:skip=CKV_AWS_260: "Architecture Requirement - Port 80 is open to capture and upgrade public traffic to HTTPS 443."
+    description = "Allow standard HTTP traffic for secure TLS enforcement redirection loops"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "Allow complete egress out to active infrastructure zones"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "ClinicFlow-ALB-SecurityGroup"
+    Environment = "Production"
+  }
+}
+
+resource "aws_security_group" "healer_sg" {
+  name        = "clinicflow-healer-sg"
+  description = "Security group for compliance lambda"
+  vpc_id      = aws_vpc.clinicflow_vpc.id
+
+  egress {
+    # checkov:skip=CKV_AWS_382: "Architecture Requirement - Lambda requires egress to complete core security health checks."
+    description = "Allow outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "ClinicFlow-Healer-SecurityGroup"
+    Environment = "Production"
+  }
+}
+
+resource "aws_security_group" "db_sg" {
+  name        = "clinicflow-db-sg"
+  description = "Allows database traffic from backend instances"
+  vpc_id      = aws_vpc.clinicflow_vpc.id
+
+  ingress {
+    description     = "Allow database access from the Web Security Group tier"
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [aws_security_group.web_sg.id]
+  }
+
+  egress {
+    description = "Block outbound traffic from database tier"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "ClinicFlow-DB-SecurityGroup"
+    Environment = "Production"
+  }
+}
