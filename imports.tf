@@ -35,10 +35,10 @@ import {
   id = "subnet-068d2f33719fb834d"
 }
 
-# 4. LAYER 4 FIREWALL SECURITY GROUPS (RECONCILED DUPLICATES)
+# 4. LAYER 4 FIREWALL SECURITY GROUPS
 import {
   to = module.pilot_medspa.aws_security_group.web_sg
-  id = "sg-0c383a377dbbef6fa" # Mapped to the active ID throwing the ALB 400 error
+  id = "sg-0c383a377dbbef6fa"
 }
 
 import {
@@ -73,10 +73,4 @@ import {
 import {
   to = module.pilot_medspa.aws_db_subnet_group.clinicflow_db_subnet_group
   id = "clinicflow-db-subnet-group"
-}
-
-# 9. AWS TRANSFER SFTP INSTANCE ENGINE
-import {
-  to = module.pilot_medspa.aws_transfer_server.clinicflow_sftp
-  id = "s-1b83a4f0a9d140a4a"
-}# Production Reconciled: 2026-05-23
+}# Cache Invalidation Pass: 2026-05-23
