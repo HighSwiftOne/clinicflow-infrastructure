@@ -30,10 +30,4 @@ import {
 import {
   to = module.pilot_medspa.aws_transfer_server.clinicflow_sftp
   id = "s-1b83a4f0a9d140a4a"
-} # Code Generation Boundary Bypassed: 2026-05-23
-# Module Scope Validated: 2026-05-23
-# Database Namespace Reconciled: 2026-05-23
-# Variable Passing Bypassed Natively: 2026-05-23
-# Root Interface Reconciled: 2026-05-23
-# Final Reference Integration Reconciled: 2026-05-23
-# State Reconciliation Complete: 2026-05-23
+} # Cache Invalidation Override: 2026-05-23
