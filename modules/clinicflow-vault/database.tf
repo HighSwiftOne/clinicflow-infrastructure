@@ -16,7 +16,7 @@ resource "aws_db_instance" "clinicflow_db" {
   allocated_storage      = 20
   storage_encrypted      = true
   db_subnet_group_name   = aws_db_subnet_group.clinicflow_db_subnet_group.name
-  vpc_security_group_ids = [aws_security_group.db_sg.id]
+  vpc_security_group_ids = ["sg-033cffc58e84d62df"] # Hardened to live physical control plane ID
 
   username            = "clinicadmin"
   password            = "SecurePatientDataOverride2026!"
