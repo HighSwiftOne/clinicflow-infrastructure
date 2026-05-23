@@ -8,7 +8,7 @@ import {
   id = "vpc-0867358f77f706712"
 }
 
-# 2. PERIMETER NETWORK INTERNET ROUTING GATEWAY (RECONCILED)
+# 2. PERIMETER NETWORK INTERNET ROUTING GATEWAY
 import {
   to = module.pilot_medspa.aws_internet_gateway.clinicflow_igw
   id = "igw-0f388bac1226c68f4"
@@ -35,10 +35,10 @@ import {
   id = "subnet-068d2f33719fb834d"
 }
 
-# 4. LAYER 4 FIREWALL SECURITY GROUPS (RECONCILED)
+# 4. LAYER 4 FIREWALL SECURITY GROUPS (RECONCILED DUPLICATES)
 import {
   to = module.pilot_medspa.aws_security_group.web_sg
-  id = "sg-021ebf61df1a432c6"
+  id = "sg-0c383a377dbbef6fa" # Mapped to the active ID throwing the ALB 400 error
 }
 
 import {
@@ -73,4 +73,10 @@ import {
 import {
   to = module.pilot_medspa.aws_db_subnet_group.clinicflow_db_subnet_group
   id = "clinicflow-db-subnet-group"
-}# State-Reality Alignment Secured: 2026-05-23
+}
+
+# 9. AWS TRANSFER SFTP INSTANCE ENGINE
+import {
+  to = module.pilot_medspa.aws_transfer_server.clinicflow_sftp
+  id = "s-1b83a4f0a9d140a4a"
+}# Production Reconciled: 2026-05-23
