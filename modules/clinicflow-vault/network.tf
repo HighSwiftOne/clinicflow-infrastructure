@@ -168,4 +168,4 @@ resource "aws_route_table_association" "public_b_assoc" {
 resource "aws_security_group" "web_sg" {
   name        = "clinicflow-web-sg"
   description = "Allows public traffic to ALB"
-  vpc
+  vpc_id      = aws_vpc.clinicflow_vpc.id  
