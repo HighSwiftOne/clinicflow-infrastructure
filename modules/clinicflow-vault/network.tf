@@ -221,3 +221,32 @@ resource "aws_security_group" "healer_sg" {
   }
 }
 
+# ====================================================================
+# SECURE DATABASE TIER FIREWALL (RDS)
+# ====================================================================
+resource "aws_security_group" "db_sg" {
+  name        = "clinicflow-db-sg"
+  description = "Security group for production RDS database tier"
+  vpc_id      = aws_vpc.clinicflow_vpc.id
+
+  ingress {
+    description     = "Allow encrypted MySQL traffic strictly from the Web/ALB security group"
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [aws_security_group.web_sg.id] # Elite zero-trust mapping
+  }
+
+  egress {
+    description = "Allow all outbound infrastructure traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "ClinicFlow-DB-SecurityGroup"
+    Environment = "Production"
+  }
+}
