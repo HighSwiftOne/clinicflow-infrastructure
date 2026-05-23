@@ -79,4 +79,4 @@ import {
 import {
   to = module.pilot_medspa.aws_transfer_server.clinicflow_sftp
   id = "s-1b83a4f0a9d140a4a"
-}# Namespace Scope Reconciled: 2026-05-23
+}# Namespace Scope Alignment Secured: 2026-05-23
