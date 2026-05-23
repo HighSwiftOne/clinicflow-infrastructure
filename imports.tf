@@ -62,4 +62,4 @@ import {
 import {
   to = module.pilot_medspa.aws_db_subnet_group.clinicflow_db_subnet_group
   id = "clinicflow-db-subnet-group"
-}
+}# Final Zero-Drift Sync Complete: 2026-05-22
