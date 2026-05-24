@@ -249,9 +249,4 @@ resource "aws_security_group" "db_sg" {
     ignore_changes  = [name, description]
     prevent_destroy = true
   }
-
-  tags = {
-    Name        = "ClinicFlow-DB-SecurityGroup"
-    Environment = "Production"
-  }
 }
