@@ -2,21 +2,30 @@
 # COMPLIANT DATA RETENTION SUBSYSTEMS - RDS TIER
 # ====================================================================
 resource "aws_db_subnet_group" "clinicflow_db_subnet_group" {
-  name       = "clinicflow-db-subnet-group"
-  subnet_ids = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+  name = "clinicflow-db-subnet-group"
+
+  # Locked to the true physical subnets residing in vpc-0b16b471db8de244e
+  subnet_ids = [
+    "subnet-05453892442d2491a",
+    "subnet-0dbb79900d7a0c3d8",
+    "subnet-0d09d66516dd3f0e2",
+    "subnet-00fec48ee266cff16"
+  ]
 
   tags = { Name = "ClinicFlow DB Subnet Group" }
 }
 
 resource "aws_db_instance" "clinicflow_db" {
-  identifier             = "clinicflow-database-production"
-  engine                 = "mysql"
-  engine_version         = "8.0"
-  instance_class         = "db.t3.micro"
-  allocated_storage      = 20
-  storage_encrypted      = true
-  db_subnet_group_name   = aws_db_subnet_group.clinicflow_db_subnet_group.name
-  vpc_security_group_ids = ["sg-033cffc58e84d62df"] # Hardened to live physical control plane ID
+  identifier           = "clinicflow-database-production"
+  engine               = "mysql"
+  engine_version       = "8.0"
+  instance_class       = "db.t3.micro"
+  allocated_storage    = 20
+  storage_encrypted    = true
+  db_subnet_group_name = aws_db_subnet_group.clinicflow_db_subnet_group.name
+
+  # Hardened to the true live physical control plane ID
+  vpc_security_group_ids = ["sg-03c3efc43abe87cd0"]
 
   username            = "clinicadmin"
   password            = "SecurePatientDataOverride2026!"
