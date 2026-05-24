@@ -245,7 +245,6 @@ resource "aws_security_group" "db_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # ELITE GUARDRAIL: Physically block the compiler from destructive flips
   lifecycle {
     ignore_changes  = [name, description]
     prevent_destroy = true
