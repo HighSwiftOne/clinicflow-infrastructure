@@ -224,13 +224,16 @@ resource "aws_security_group" "healer_sg" {
 # ====================================================================
 # SECURE DATABASE TIER FIREWALL (RDS)
 # ====================================================================
+# ====================================================================
+# PRODUCTION TIER DATABASE FIREWALL LAYER
+# ====================================================================
 resource "aws_security_group" "db_sg" {
-  name        = "ClinicFlow-DB-SG" # Exact name case from your live provider scan
-  description = "Allow traffic only from Web Tier"
-  vpc_id      = "vpc-0b16b471db8de244e" # Hard-anchored to the live legacy network home
+  name        = "clinicflow-db-sg"
+  description = "Security group for production RDS database tier"
+  vpc_id      = aws_vpc.clinicflow_vpc.id
 
   ingress {
-    description     = "Allow MySQL from Web SG"
+    description     = "Allow encrypted MySQL traffic strictly from the Web/ALB security group"
     from_port       = 3306
     to_port         = 3306
     protocol        = "tcp"
@@ -238,18 +241,21 @@ resource "aws_security_group" "db_sg" {
   }
 
   egress {
-    description = "Allow database to communicate ONLY within VPC"
+    description = "Allow outbound infrastructure traffic"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["10.0.0.0/16"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # HIGH-LEVERAGE GUARDRAIL: Intercepts destructive automation flips
   lifecycle {
+    ignore_changes  = [name, description]
     prevent_destroy = true
   }
 
   tags = {
-    Name = "ClinicFlow-DB-SG"
+    Name        = "ClinicFlow-DB-SecurityGroup"
+    Environment = "Production"
   }
 }

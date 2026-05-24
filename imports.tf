@@ -5,13 +5,13 @@
 # 1. CORE VPC FABRIC GROUNDWORK
 import {
   to = module.pilot_medspa.aws_vpc.clinicflow_vpc
-  id = "vpc-0b16b471db8de244e" # Targets the true running database host network
+  id = "vpc-0867358f77f706712"
 }
 
 # 2. PERIMETER NETWORK INTERNET ROUTING GATEWAY
 import {
   to = module.pilot_medspa.aws_internet_gateway.clinicflow_igw
-  id = "igw-0f388bac1226c68f4"
+  id = "igw-0ab1b8086481499dc"
 }
 
 # 3. LAYER 3 SUBNET ROUTING FABRIC MAPPINGS
@@ -35,7 +35,7 @@ import {
   id = "subnet-068d2f33719fb834d"
 }
 
-# 4. LAYER 4 FIREWALL SECURITY GROUPS (RECONCILED VIA TELEMETRY)
+# 4. LAYER 4 FIREWALL SECURITY GROUPS (SYNCHRONIZED TO LIVE LOGS)
 import {
   to = module.pilot_medspa.aws_security_group.web_sg
   id = "sg-0c383a377dbbef6fa"
@@ -48,7 +48,7 @@ import {
 
 import {
   to = module.pilot_medspa.aws_security_group.db_sg
-  id = "sg-033cffc58e84d62df"
+  id = "sg-03c3efc43abe87cd0"
 }
 
 # 5. APPLICATION HARDENED LOAD BALANCER TIER
