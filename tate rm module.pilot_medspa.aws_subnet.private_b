@@ -1,0 +1,36 @@
+{
+    "Subnets": [
+        {
+            "AvailabilityZoneId": "use1-az2",
+            "MapCustomerOwnedIpOnLaunch": false,
+            "OwnerId": "541495491866",
+            "AssignIpv6AddressOnCreation": false,
+            "Ipv6CidrBlockAssociationSet": [],
+            "Tags": [
+                {
+                    "Key": "Name",
+                    "Value": "ClinicFlow-Private-Subnet-B"
+                }
+            ],
+            "SubnetArn": "arn:aws:ec2:us-east-1:541495491866:subnet/subnet-068d2f33719fb834d",
+            "EnableDns64": false,
+            "Ipv6Native": false,
+            "PrivateDnsNameOptionsOnLaunch": {
+                "HostnameType": "ip-name",
+                "EnableResourceNameDnsARecord": false,
+                "EnableResourceNameDnsAAAARecord": false
+            },
+            "BlockPublicAccessStates": {
+                "InternetGatewayBlockMode": "off"
+            },
+            "SubnetId": "subnet-068d2f33719fb834d",
+            "State": "available",
+            "VpcId": "vpc-0867358f77f706712",
+            "CidrBlock": "10.0.4.0/24",
+            "AvailableIpAddressCount": 250,
+            "AvailabilityZone": "us-east-1b",
+            "DefaultForAz": false,
+            "MapPublicIpOnLaunch": false
+        }
+    ]
+}
