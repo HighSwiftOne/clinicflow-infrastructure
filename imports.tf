@@ -48,7 +48,7 @@ import {
 
 import {
   to = module.pilot_medspa.aws_security_group.db_sg
-  id = "sg-033cffc58e84d62df"
+  id = "sg-03c3efc43abe87cd0" # <--- RECONCILED TO LIVE ATTACHED ID
 }
 
 # 5. APPLICATION HARDENED LOAD BALANCER TIER
@@ -79,4 +79,4 @@ import {
 import {
   to = module.pilot_medspa.aws_transfer_server.clinicflow_sftp
   id = "s-1b83a4f0a9d140a4a"
-}# State Reconciliation Complete: 2026-05-23
+}# State Reconciliation Complete: 2026-05-24
