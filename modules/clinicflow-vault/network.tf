@@ -225,12 +225,12 @@ resource "aws_security_group" "healer_sg" {
 # SECURE DATABASE TIER FIREWALL (RDS)
 # ====================================================================
 resource "aws_security_group" "db_sg" {
-  name        = "clinicflow-db-sg"
-  description = "Security group for production RDS database tier"
-  vpc_id      = aws_vpc.clinicflow_vpc.id
+  name        = "ClinicFlow-DB-SG" # Exact name case from your live provider scan
+  description = "Allow traffic only from Web Tier"
+  vpc_id      = "vpc-0b16b471db8de244e" # Hard-anchored to the live legacy network home
 
   ingress {
-    description     = "Allow encrypted MySQL traffic strictly from the Web/ALB security group"
+    description     = "Allow MySQL from Web SG"
     from_port       = 3306
     to_port         = 3306
     protocol        = "tcp"
@@ -238,21 +238,18 @@ resource "aws_security_group" "db_sg" {
   }
 
   egress {
-    description = "Allow all outbound infrastructure traffic"
+    description = "Allow database to communicate ONLY within VPC"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["10.0.0.0/16"]
   }
 
-  # STRICT PIPELINE GUARDRAIL
   lifecycle {
-    ignore_changes  = [name, description]
     prevent_destroy = true
   }
 
   tags = {
-    Name        = "clinicflow-db-sg"
-    Environment = "Production"
+    Name = "ClinicFlow-DB-SG"
   }
 }

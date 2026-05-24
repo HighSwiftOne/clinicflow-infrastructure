@@ -5,7 +5,7 @@
 # 1. CORE VPC FABRIC GROUNDWORK
 import {
   to = module.pilot_medspa.aws_vpc.clinicflow_vpc
-  id = "vpc-0867358f77f706712"
+  id = "vpc-0b16b471db8de244e" # Targets the true running database host network
 }
 
 # 2. PERIMETER NETWORK INTERNET ROUTING GATEWAY
