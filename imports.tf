@@ -2,7 +2,7 @@
 # CLINICFLOW CORE PRODUCTION STATE RECONCILIATION LAYER
 # ====================================================================
 
-# 1. CORE VPC FABRIC GROUNDWORK
+# 1. CORE VPC FABRIC GROUNDWORK (The True Anchor)
 import {
   to = module.pilot_medspa.aws_vpc.clinicflow_vpc
   id = "vpc-0b16b471db8de244e"
@@ -17,22 +17,22 @@ import {
 # 3. LAYER 3 SUBNET ROUTING FABRIC MAPPINGS
 import {
   to = module.pilot_medspa.aws_subnet.public_a
-  id = "subnet-0d09d66516dd3f0e2" # 10.0.1.0/24
+  id = "subnet-0d09d66516dd3f0e2"
 }
 
 import {
   to = module.pilot_medspa.aws_subnet.public_b
-  id = "subnet-0dbb79900d7a0c3d8" # 10.0.2.0/24
+  id = "subnet-0dbb79900d7a0c3d8"
 }
 
 import {
   to = module.pilot_medspa.aws_subnet.private_a
-  id = "subnet-00fec48ee266cff16" # 10.0.3.0/24
+  id = "subnet-00fec48ee266cff16"
 }
 
 import {
   to = module.pilot_medspa.aws_subnet.private_b
-  id = "subnet-05453892442d2491a" # 10.0.4.0/24
+  id = "subnet-05453892442d2491a"
 }
 
 # 4. LAYER 4 FIREWALL SECURITY GROUPS
