@@ -2,53 +2,21 @@
 # CLINICFLOW CORE PRODUCTION STATE RECONCILIATION LAYER
 # ====================================================================
 
-# 1. CORE VPC FABRIC GROUNDWORK
+# 1. CORE VPC FABRIC GROUNDWORK (ANCHORED TO LIVE DB/ALB)
 import {
   to = module.pilot_medspa.aws_vpc.clinicflow_vpc
-  id = "vpc-0867358f77f706712"
+  id = "vpc-0b16b471db8de244e"
 }
 
-# 2. PERIMETER NETWORK INTERNET ROUTING GATEWAY (CORRECTED)
-import {
-  to = module.pilot_medspa.aws_internet_gateway.clinicflow_igw
-  id = "igw-0f388bac1226c68f4"
-}
-
-# 3. LAYER 3 SUBNET ROUTING FABRIC MAPPINGS
-import {
-  to = module.pilot_medspa.aws_subnet.public_a
-  id = "subnet-09fa98f477aa6c549"
-}
-
-import {
-  to = module.pilot_medspa.aws_subnet.public_b
-  id = "subnet-0cced3aa961573526"
-}
-
-import {
-  to = module.pilot_medspa.aws_subnet.private_a
-  id = "subnet-0965fcc0cbcdd1339"
-}
-
-import {
-  to = module.pilot_medspa.aws_subnet.private_b
-  id = "subnet-068d2f33719fb834d"
-}
-
-# 4. LAYER 4 FIREWALL SECURITY GROUPS (SYNCHRONIZED TO CLI)
+# 4. LAYER 4 FIREWALL SECURITY GROUPS (SYNCHRONIZED TO CLI TELEMETRY)
 import {
   to = module.pilot_medspa.aws_security_group.web_sg
-  id = "sg-0c383a377dbbef6fa"
-}
-
-import {
-  to = module.pilot_medspa.aws_security_group.healer_sg
-  id = "sg-07da5378daeb9b2db"
+  id = "sg-050e40bfd8610eb8e"
 }
 
 import {
   to = module.pilot_medspa.aws_security_group.db_sg
-  id = "sg-033cffc58e84d62df"
+  id = "sg-03c3efc43abe87cd0"
 }
 
 # 5. APPLICATION HARDENED LOAD BALANCER TIER
@@ -57,8 +25,8 @@ import {
   id = "arn:aws:elasticloadbalancing:us-east-1:541495491866:loadbalancer/app/ClinicFlow-ALB/800e071bd03a2dda"
 }
 
-# 6. APPLICATION ROUTING TARGET GROUP
+# 7. PRODUCTION DATABASE INSTANCE ADOPTION
 import {
-  to = module.pilot_medspa.aws_lb_target_group.clinicflow_tg
-  id = "arn:aws:elasticloadbalancing:us-east-1:541495491866:targetgroup/ClinicFlow-TargetGroup/a39fa0a9aae1d6e0"
+  to = module.pilot_medspa.aws_db_instance.clinicflow_db
+  id = "db-LOMYBPPO7SUDALTOQRCLJQWGTY"
 }

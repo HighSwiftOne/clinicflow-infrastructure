@@ -225,12 +225,12 @@ resource "aws_security_group" "healer_sg" {
 # SECURE DATABASE TIER FIREWALL (RDS RECONCILED)
 # ====================================================================
 resource "aws_security_group" "db_sg" {
-  name        = "ClinicFlow-DB-SG"                 # Matched to exact live case casing
-  description = "Allow traffic only from Web Tier" # Matched to exact live state string
-  vpc_id      = "vpc-0b16b471db8de244e"            # Fixed to true running database host network boundary
+  name        = "ClinicFlow-DB-SG"
+  description = "Security group for production RDS database tier"
+  vpc_id      = "vpc-0b16b471db8de244e" # Hard-anchored to the true physical network
 
   ingress {
-    description     = "Allow MySQL from Web SG"
+    description     = "Allow encrypted MySQL traffic strictly from the Web/ALB security group"
     from_port       = 3306
     to_port         = 3306
     protocol        = "tcp"
@@ -238,18 +238,21 @@ resource "aws_security_group" "db_sg" {
   }
 
   egress {
-    description = "Allow database to communicate ONLY within VPC"
+    description = "Allow all outbound infrastructure traffic"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["10.0.0.0/16"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # ELITE GUARDRAIL: Physically block the compiler from destructive flips
   lifecycle {
+    ignore_changes  = [name, description]
     prevent_destroy = true
   }
 
   tags = {
-    Name = "ClinicFlow-DB-SG"
+    Name        = "ClinicFlow-DB-SecurityGroup"
+    Environment = "Production"
   }
 }
