@@ -89,19 +89,7 @@ resource "aws_internet_gateway" "clinicflow_igw" {
   }
 }
 
-resource "aws_route_table" "public_rt" {
-  vpc_id = aws_vpc.clinicflow_vpc.id
 
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.clinicflow_igw.id
-  }
-
-  tags = {
-    Name        = "ClinicFlow-Public-RouteTable"
-    Environment = "Production"
-  }
-}
 
 # ====================================================================
 # SUB NETWORKING LAYOUTS & ROUTING (HARD-ANCHORED)
