@@ -11,7 +11,7 @@ import {
 # 2. PERIMETER NETWORK INTERNET ROUTING GATEWAY
 import {
   to = module.pilot_medspa.aws_internet_gateway.clinicflow_igw
-  id = "igw-0ab1b8086481499dc"
+  id = "igw-0f388bac1226c68f4"
 }
 
 # 3. LAYER 3 SUBNET ROUTING FABRIC MAPPINGS
@@ -35,7 +35,7 @@ import {
   id = "subnet-068d2f33719fb834d"
 }
 
-# 4. LAYER 4 FIREWALL SECURITY GROUPS
+# 4. LAYER 4 FIREWALL SECURITY GROUPS (RECONCILED VIA TELEMETRY)
 import {
   to = module.pilot_medspa.aws_security_group.web_sg
   id = "sg-0c383a377dbbef6fa"
@@ -48,7 +48,7 @@ import {
 
 import {
   to = module.pilot_medspa.aws_security_group.db_sg
-  id = "sg-03c3efc43abe87cd0" # <--- RECONCILED TO LIVE ATTACHED ID
+  id = "sg-033cffc58e84d62df"
 }
 
 # 5. APPLICATION HARDENED LOAD BALANCER TIER
@@ -60,7 +60,7 @@ import {
 # 6. APPLICATION ROUTING TARGET GROUP
 import {
   to = module.pilot_medspa.aws_lb_target_group.clinicflow_tg
-  id = "arn:aws:elasticloadbalancing:us-east-1:541495491866:targetgroup/ClinicFlow-TargetGroup/a2a47328fd71adf2"
+  id = "arn:aws:elasticloadbalancing:us-east-1:541495491866:targetgroup/ClinicFlow-TargetGroup/a39fa0a9aae1d6e0"
 }
 
 # 7. PRODUCTION DATABASE INSTANCE ADOPTION
@@ -79,4 +79,4 @@ import {
 import {
   to = module.pilot_medspa.aws_transfer_server.clinicflow_sftp
   id = "s-1b83a4f0a9d140a4a"
-}# State Reconciliation Complete: 2026-05-24
+}
