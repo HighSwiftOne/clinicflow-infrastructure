@@ -27,7 +27,9 @@ resource "aws_lb_target_group" "clinicflow_tg" {
   name     = "ClinicFlow-TargetGroup"
   port     = 80
   protocol = "HTTP"
-  vpc_id   = aws_vpc.clinicflow_vpc.id
+
+  # ELITE GUARDRAIL: Hard-anchored to the true physical database/ALB network
+  vpc_id = "vpc-0b16b471db8de244e"
 
   health_check {
     path                = "/"
