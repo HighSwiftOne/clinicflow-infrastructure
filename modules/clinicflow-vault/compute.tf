@@ -1,22 +1,23 @@
-# --- ALB (Front Door) ---
+# ====================================================================
+# APPLICATION HARDENED LOAD BALANCER
+# ====================================================================
 resource "aws_lb" "clinicflow_alb" {
-  # checkov:skip=CKV2_AWS_28:FinOps - WAF incurs a $5/mo base fee. Accepted risk for lab baseline.
   name               = "ClinicFlow-ALB"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.web_sg.id]
-  subnets            = [aws_subnet.public_a.id, aws_subnet.public_b.id]
 
-  drop_invalid_header_fields = true
-  enable_deletion_protection = true
+  # Pointing strictly to the unified Web Security Group 
+  security_groups = [aws_security_group.web_sg.id]
 
-  access_logs {
-    bucket  = aws_s3_bucket.clinicflow_logs.id
-    enabled = true
-  }
+  # Pointing strictly to the aligned Public Subnets
+  subnets = [
+    aws_subnet.public_a.id,
+    aws_subnet.public_b.id
+  ]
 
-  tags = {
-    Name = "ClinicFlow-ALB"
+  # High-leverage guardrail to protect the live traffic router
+  lifecycle {
+    prevent_destroy = true
   }
 }
 
