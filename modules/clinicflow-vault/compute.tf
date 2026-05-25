@@ -41,19 +41,14 @@ resource "aws_lb_target_group" "clinicflow_tg" {
 }
 
 # --- Listeners ---
-resource "aws_lb_listener" "http_redirect" {
+resource "aws_lb_listener" "http_forward" {
   load_balancer_arn = aws_lb.clinicflow_alb.arn
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
-    type = "redirect"
-
-    redirect {
-      port        = "443"
-      protocol    = "HTTPS"
-      status_code = "HTTP_301"
-    }
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.clinicflow_tg.arn
   }
 }
 
