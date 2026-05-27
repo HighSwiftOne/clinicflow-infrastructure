@@ -33,7 +33,27 @@ jobs:
       - name: Setup Terraform Binary Engine
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.10.0" # UPGRADED: Forces runner to compile with v1.10.0+ libraries
+          terraform_version: "1.10.0"
+
+      # ====================================================================
+      # S-TIER CI/CD SECURITY GATES (HIPAA ENFORCEMENT)
+      # ====================================================================
+      - name: Run Static Security Analysis (tfsec)
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          soft_fail: false # HARD FAIL: Kills pipeline on CRITICAL/HIGH
+          arguments: --minimum-severity HIGH --exclude-dir .terraform
+
+      - name: Run Compliance Scanning (Checkov)
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          framework: terraform
+          quiet: true
+          compact: true
+          soft_fail_on: SKIPPED_CHECKS
+          output_format: cli
+      # ====================================================================
 
       - name: Initialize Code Base Backend Mapping
         run: terraform init
@@ -64,7 +84,7 @@ jobs:
       - name: Setup Terraform Binary Engine
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.10.0" # UPGRADED: Forces apply execution tier to match planning engine
+          terraform_version: "1.10.0" 
 
       - name: Download Verified Build Plan Artifact
         uses: actions/download-artifact@v4
