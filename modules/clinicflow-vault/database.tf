@@ -27,8 +27,10 @@ resource "aws_db_instance" "clinicflow_db" {
   # Hardened to the true live physical control plane ID
   vpc_security_group_ids = ["sg-03c3efc43abe87cd0"]
 
-  username            = "clinicadmin"
-  password            = "SecurePatientDataOverride2026!"
+  username = "clinicadmin"
+  # ELITE GUARDRAIL: AWS natively manages and rotates the password via Secrets Manager
+  manage_master_user_password = true
+
   skip_final_snapshot = true
   publicly_accessible = false
   multi_az            = true
