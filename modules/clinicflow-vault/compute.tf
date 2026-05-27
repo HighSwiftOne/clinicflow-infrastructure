@@ -50,6 +50,12 @@ resource "aws_lb_listener" "http_forward" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.clinicflow_tg.arn
   }
+
+  # This forces AWS to spin up the new configuration before killing the old one,
+  # gracefully transferring the traffic and preventing API crashes.
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # --- Compute Engine (ASG) ---

@@ -81,7 +81,7 @@ resource "aws_iam_role_policy" "vpc_flow_log_policy" {
 # PERIMETER INTERNET ROUTING GATEWAY
 # ====================================================================
 resource "aws_internet_gateway" "clinicflow_igw" {
-  vpc_id = "vpc-0b16b471db8de244e" # <--- Hard-anchored
+  vpc_id = aws_vpc.clinicflow_vpc.id
 
   tags = {
     Name        = "ClinicFlow-Gateway"
@@ -93,7 +93,7 @@ resource "aws_internet_gateway" "clinicflow_igw" {
 # SUB NETWORKING LAYOUTS & ROUTING (HARD-ANCHORED)
 # ====================================================================
 resource "aws_route_table" "public_rt" {
-  vpc_id = "vpc-0b16b471db8de244e" # <--- Hard-anchored
+  vpc_id = aws_vpc.clinicflow_vpc.id # <--- Hard-anchored
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -107,7 +107,7 @@ resource "aws_route_table" "public_rt" {
 }
 
 resource "aws_subnet" "public_a" {
-  vpc_id                  = "vpc-0b16b471db8de244e" # <--- Hard-anchored
+  vpc_id                  = aws_vpc.clinicflow_vpc.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "us-east-1a"
   map_public_ip_on_launch = false
@@ -116,7 +116,7 @@ resource "aws_subnet" "public_a" {
 }
 
 resource "aws_subnet" "public_b" {
-  vpc_id                  = "vpc-0b16b471db8de244e" # <--- Hard-anchored
+  vpc_id                  = aws_vpc.clinicflow_vpc.id
   cidr_block              = "10.0.2.0/24"
   availability_zone       = "us-east-1b"
   map_public_ip_on_launch = false
@@ -125,7 +125,7 @@ resource "aws_subnet" "public_b" {
 }
 
 resource "aws_subnet" "private_a" {
-  vpc_id                  = "vpc-0b16b471db8de244e" # <--- Hard-anchored
+  vpc_id                  = aws_vpc.clinicflow_vpc.id
   cidr_block              = "10.0.3.0/24"
   availability_zone       = "us-east-1a"
   map_public_ip_on_launch = false
@@ -134,7 +134,7 @@ resource "aws_subnet" "private_a" {
 }
 
 resource "aws_subnet" "private_b" {
-  vpc_id                  = "vpc-0b16b471db8de244e" # <--- Hard-anchored
+  vpc_id                  = aws_vpc.clinicflow_vpc.id
   cidr_block              = "10.0.4.0/24"
   availability_zone       = "us-east-1b"
   map_public_ip_on_launch = false
@@ -143,7 +143,7 @@ resource "aws_subnet" "private_b" {
 }
 
 resource "aws_route_table" "private_rt" {
-  vpc_id = "vpc-0b16b471db8de244e" # <--- Hard-anchored
+  vpc_id = aws_vpc.clinicflow_vpc.id
 
   tags = {
     Name        = "ClinicFlow-Private-RouteTable"
@@ -157,7 +157,7 @@ resource "aws_route_table" "private_rt" {
 resource "aws_security_group" "web_sg" {
   name        = "clinicflow-web-sg"
   description = "Allows public traffic to ALB"
-  vpc_id      = "vpc-0b16b471db8de244e" # <--- Hard-anchored
+  vpc_id      = aws_vpc.clinicflow_vpc.id
 
   ingress {
     description = "Allow secure encrypted HTTPS traffic from public endpoints"
@@ -197,7 +197,7 @@ resource "aws_security_group" "web_sg" {
 resource "aws_security_group" "healer_sg" {
   name        = "clinicflow-healer-sg"
   description = "Security group for compliance lambda"
-  vpc_id      = "vpc-0b16b471db8de244e" # <--- Hard-anchored
+  vpc_id      = aws_vpc.clinicflow_vpc.id
 
   egress {
     # checkov:skip=CKV_AWS_382: "Architecture Requirement - Lambda requires egress to complete core security health checks."
@@ -224,7 +224,7 @@ resource "aws_security_group" "healer_sg" {
 resource "aws_security_group" "db_sg" {
   name        = "ClinicFlow-DB-SG"
   description = "Security group for production RDS database tier"
-  vpc_id      = "vpc-0b16b471db8de244e" # Hard-anchored to the true physical network
+  vpc_id      = aws_vpc.clinicflow_vpc.id
 
   ingress {
     description     = "Allow encrypted MySQL traffic strictly from the Web/ALB security group"
