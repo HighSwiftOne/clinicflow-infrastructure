@@ -93,7 +93,7 @@ resource "aws_internet_gateway" "clinicflow_igw" {
 # SUB NETWORKING LAYOUTS & ROUTING (HARD-ANCHORED)
 # ====================================================================
 resource "aws_route_table" "public_rt" {
-  vpc_id = aws_vpc.clinicflow_vpc.id # <--- Hard-anchored
+  vpc_id = aws_vpc.clinicflow_vpc.id # 
 
   route {
     cidr_block = "0.0.0.0/0"
