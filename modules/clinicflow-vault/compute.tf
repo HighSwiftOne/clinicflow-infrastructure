@@ -29,7 +29,7 @@ resource "aws_lb_target_group" "clinicflow_tg" {
   protocol = "HTTP"
 
   # ELITE GUARDRAIL: Hard-anchored to the true physical database/ALB network
-  vpc_id = "vpc-0b16b471db8de244e"
+  vpc_id = data.aws_vpc.clinicflow_vpc.id
 
   health_check {
     path                = "/"
