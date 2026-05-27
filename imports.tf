@@ -3,10 +3,6 @@
 # ====================================================================
 
 # 1. CORE VPC FABRIC GROUNDWORK
-import {
-  to = module.pilot_medspa.aws_vpc.clinicflow_vpc
-  id = "vpc-0b16b471db8de244e"
-}
 
 import {
   to = module.pilot_medspa.aws_internet_gateway.clinicflow_igw
