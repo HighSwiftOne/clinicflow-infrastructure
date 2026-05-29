@@ -7,11 +7,15 @@ variable "alert_email" {
   sensitive   = false
 }
 
-# ============================================
-# SNS TOPIC – The Megaphone
-# ============================================
+# ====================================================================
+# OBSERVABILITY - SNS ALERT MEGAPHONE
+# ====================================================================
 resource "aws_sns_topic" "security_alerts" {
   name = "clinicflow-security-alerts"
+  
+  # ELITE GUARDRAIL: KMS Encryption for the SNS Topic (Fixes CKV_AWS_26)
+  kms_master_key_id = aws_kms_key.clinicflow_cmk.arn 
+}
 
   # Enable FIFO? No, standard is fine for alerts.
   # Enable delivery status logging? Optional.
@@ -32,6 +36,8 @@ resource "aws_sns_topic" "security_alerts" {
     Environment = "Production"
   }
 }
+
+
 
 # Email subscription (SNS uses email as protocol)
 resource "aws_sns_topic_subscription" "security_team_email" {
