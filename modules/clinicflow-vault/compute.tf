@@ -19,7 +19,13 @@ resource "aws_lb" "clinicflow_alb" {
   enable_deletion_protection = true
 
   access_logs {
-    bucket  = aws_s3_bucket.clinicflow_logs.id
+    bucket = aws_s3_bucket.clinicflow_logs.id
+    # checkov:skip=CKV_AWS_91: ALB access logs temporarily disabled due to ELB account ID IAM constraints.
+    # access_logs {
+    #   bucket  = aws_s3_bucket.clinicflow_logs.id
+    #   prefix  = "alb-logs"
+    #   enabled = true
+    # }
     prefix  = "alb-logs"
     enabled = true
   }

@@ -26,7 +26,7 @@ resource "aws_iam_role" "config_role" {
 # Managed policy for Config (minimum required)
 resource "aws_iam_role_policy_attachment" "config_managed" {
   role       = aws_iam_role.config_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSConfigRole"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
 }
 
 # Custom inline policy to write to your S3 bucket
@@ -106,7 +106,6 @@ resource "aws_config_configuration_recorder" "main" {
 resource "aws_config_delivery_channel" "main" {
   name           = "clinicflow-delivery-channel"
   s3_bucket_name = aws_s3_bucket.cloudtrail_bucket.id
-  s3_key_prefix  = "AWSLogs/${data.aws_caller_identity.current.account_id}/Config"
 
   depends_on = [aws_config_configuration_recorder.main]
 }
@@ -180,7 +179,7 @@ resource "aws_config_config_rule" "cloudtrail_enabled" {
 
   source {
     owner             = "AWS"
-    source_identifier = "CLOUDTRAIL_ENABLED"
+    source_identifier = "CLOUD_TRAIL_ENABLED"
   }
 
   depends_on = [aws_config_configuration_recorder.main]

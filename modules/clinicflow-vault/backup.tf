@@ -93,6 +93,5 @@ resource "aws_backup_selection" "production_resources" {
     "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:instance/*",
     "arn:aws:rds:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:db:*",
     "arn:aws:s3:::clinicflow-*",
-    "arn:aws:efs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:file-system/*",
   ]
 }
