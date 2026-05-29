@@ -6,16 +6,22 @@ resource "aws_lb" "clinicflow_alb" {
   internal           = false
   load_balancer_type = "application"
 
-  # Pointing strictly to the unified Web Security Group 
   security_groups = [aws_security_group.web_sg.id]
-
-  # Pointing strictly to the aligned Public Subnets
   subnets = [
     aws_subnet.public_a.id,
     aws_subnet.public_b.id
   ]
 
-  # High-leverage guardrail to protect the live traffic router
+  # ELITE GUARDRAILS (Checkov Remediation)
+  drop_invalid_header_fields = true
+  enable_deletion_protection = true
+
+  access_logs {
+    bucket  = aws_s3_bucket.clinicflow_logs.id
+    prefix  = "alb-logs"
+    enabled = true
+  }
+
   lifecycle {
     prevent_destroy = true
   }
@@ -27,9 +33,7 @@ resource "aws_lb_target_group" "clinicflow_tg" {
   name     = "ClinicFlow-TargetGroup"
   port     = 80
   protocol = "HTTP"
-
-  # ELITE GUARDRAIL: Hard-anchored to the true physical database/ALB network
-  vpc_id = data.aws_vpc.clinicflow_vpc.id
+  vpc_id   = data.aws_vpc.clinicflow_vpc.id
 
   health_check {
     path                = "/"
@@ -40,21 +44,34 @@ resource "aws_lb_target_group" "clinicflow_tg" {
   }
 }
 
-# --- Listeners ---
-resource "aws_lb_listener" "http_forward" {
+# --- Listeners (Checkov HTTPS Enforcement) ---
+resource "aws_lb_listener" "http_redirect" {
   load_balancer_arn = aws_lb.clinicflow_alb.arn
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
+    type = "redirect"
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+resource "aws_lb_listener" "https_forward" {
+  load_balancer_arn = aws_lb.clinicflow_alb.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS12-1-2-2021-06"
+
+  # REPLACE THIS with your actual ACM Certificate ARN before deploying to AWS
+  certificate_arn = "arn:aws:acm:us-east-1:541495491866:certificate/12345678-1234-1234-1234-123456789012"
+
+  default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.clinicflow_tg.arn
-  }
-
-  # This forces AWS to spin up the new configuration before killing the old one,
-  # gracefully transferring the traffic and preventing API crashes.
-  lifecycle {
-    create_before_destroy = true
   }
 }
 

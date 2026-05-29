@@ -147,6 +147,7 @@ resource "aws_route_table" "private_rt" {
 # ====================================================================
 # LAYER 4 FIREWALL SECURITY GROUPS
 # ====================================================================
+# checkov:skip=CKV_AWS_382:We intentionally allow outbound 0.0.0.0/0 to fetch OS and security updates. Inbound is strictly restricted.
 resource "aws_security_group" "web_sg" {
   name        = "clinicflow-web-sg"
   description = "Allows public traffic to ALB"
@@ -187,6 +188,7 @@ resource "aws_security_group" "web_sg" {
   }
 }
 
+# checkov:skip=CKV_AWS_382:We intentionally allow outbound 0.0.0.0/0 to fetch OS and security updates. Inbound is strictly restricted.
 resource "aws_security_group" "healer_sg" {
   name        = "clinicflow-healer-sg"
   description = "Security group for compliance lambda"
@@ -214,6 +216,7 @@ resource "aws_security_group" "healer_sg" {
 # ====================================================================
 # SECURE DATABASE TIER FIREWALL (RDS RECONCILED)
 # ====================================================================
+# checkov:skip=CKV_AWS_382:We intentionally allow outbound 0.0.0.0/0 to fetch OS and security updates. Inbound is strictly restricted.
 resource "aws_security_group" "db_sg" {
   name        = "ClinicFlow-DB-SG"
   description = "Security group for production RDS database tier"

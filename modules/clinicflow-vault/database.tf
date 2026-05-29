@@ -25,7 +25,7 @@ resource "aws_db_instance" "clinicflow_db" {
   db_subnet_group_name = aws_db_subnet_group.clinicflow_db_subnet_group.name
 
   # Hardened to the true live physical control plane ID
-  vpc_security_group_ids = ["sg-03c3efc43abe87cd0"]
+  vpc_security_group_ids = [aws_security_group.db_sg.id]
 
   username = "clinicadmin"
   # ELITE GUARDRAIL: AWS natively manages and rotates the password via Secrets Manager
