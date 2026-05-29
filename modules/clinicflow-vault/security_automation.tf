@@ -183,36 +183,6 @@ resource "aws_s3_bucket_lifecycle_configuration" "cloudtrail_lifecycle" {
   }
 }
 
-# CRITICAL FIX: Explicitly authorizes CloudTrail to stream security events into our S3 container 
-resource "aws_s3_bucket_policy" "cloudtrail_policy" {
-  bucket = aws_s3_bucket.cloudtrail_bucket.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid       = "AWSCloudTrailAclCheck"
-        Effect    = "Allow"
-        Principal = { Service = "cloudtrail.amazonaws.com" }
-        Action    = "s3:GetBucketAcl"
-        Resource  = aws_s3_bucket.cloudtrail_bucket.arn
-      },
-      {
-        Sid       = "AWSCloudTrailWrite"
-        Effect    = "Allow"
-        Principal = { Service = "cloudtrail.amazonaws.com" }
-        Action    = "s3:PutObject"
-        Resource  = "${aws_s3_bucket.cloudtrail_bucket.arn}/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
-        Condition = {
-          StringEquals = {
-            "s3:x-amz-acl" = "bucket-owner-full-control"
-          }
-        }
-      }
-    ]
-  })
-}
-
 resource "aws_cloudtrail" "audit_trail" {
   # checkov:skip=CKV_AWS_35: "FinOps - Log file data encryption is handled securely via target S3 infrastructure default encryption schemes."
   # checkov:skip=CKV_AWS_36: "Architecture - File integrity validation checks are native to downstream compliance lake ingestion tools."
@@ -249,4 +219,69 @@ resource "aws_s3_bucket_logging" "cloudtrail_access_logging" {
   bucket        = aws_s3_bucket.cloudtrail_bucket.id
   target_bucket = aws_s3_bucket.clinicflow_logs.id
   target_prefix = "cloudtrail-access-logs/"
+}
+
+# ============================================
+# IAM ROLE FOR SSM AUTOMATION REMEDIATION
+# ============================================
+resource "aws_iam_role" "remediation_role" {
+  name = "ClinicFlow-Remediation-Role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "ssm.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+# Inline policy granting necessary S3 permissions
+resource "aws_iam_role_policy" "remediation_s3_policy" {
+  name = "S3PublicAccessRemediation"
+  role = aws_iam_role.remediation_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutBucketPublicAccessBlock",
+          "s3:PutBucketAcl",
+          "s3:PutBucketPolicy"
+        ]
+        Resource = "arn:aws:s3:::*"
+      }
+    ]
+  })
+}
+
+# ============================================
+# CONFIG REMEDIATION CONFIGURATION
+# ============================================
+resource "aws_config_remediation_configuration" "s3_public_read_remediation" {
+  config_rule_name           = aws_config_config_rule.s3_no_public_read.name
+  resource_type              = "AWS::S3::Bucket"
+  target_type                = "SSM_DOCUMENT"
+  target_id                  = "AWS-DisableS3BucketPublicReadWrite"
+  target_version             = "1"
+  automatic                  = true # Trigger immediately on violation
+  maximum_automatic_attempts = 3
+  retry_seconds              = 60
+
+  parameter {
+    name         = "AutomationAssumeRole"
+    static_value = aws_iam_role.remediation_role.arn
+  }
+
+  parameter {
+    name           = "BucketName"
+    resource_value = "RESOURCE_ID" # Passes the bucket name from Config
+  }
 }

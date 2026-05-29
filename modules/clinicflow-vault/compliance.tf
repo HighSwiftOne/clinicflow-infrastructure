@@ -1,8 +1,7 @@
 # ============================================
 # DATA SOURCES (No hardcoded IDs)
 # ============================================
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
+
 
 # ============================================
 # IAM ROLE FOR AWS CONFIG
