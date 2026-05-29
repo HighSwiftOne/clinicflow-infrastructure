@@ -31,18 +31,27 @@ resource "aws_s3_bucket_versioning" "clinicflow_logs_versioning" {
   }
 }
 
-resource "aws_s3_bucket_policy" "clinicflow_logs_policy" {
-  bucket = aws_s3_bucket.clinicflow_logs.id
-
+resource "aws_s3_bucket_policy" "cloudtrail_policy" {
+  bucket = aws_s3_bucket.cloudtrail_bucket.id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Sid       = "AllowLogging"
-        Effect    = "Allow"
-        Principal = { Service = "logging.s3.amazonaws.com" }
-        Action    = "s3:PutObject"
-        Resource  = "${aws_s3_bucket.clinicflow_logs.arn}/*"
+        # ... YOUR EXISTING STATEMENT ...
+      }, # <--- DO NOT FORGET THIS COMMA
+      {
+        Sid    = "AllowConfigDelivery"
+        Effect = "Allow"
+        Principal = {
+          Service = "config.amazonaws.com"
+        }
+        Action   = "s3:PutObject"
+        Resource = "${aws_s3_bucket.cloudtrail_bucket.arn}/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
+        Condition = {
+          StringEquals = {
+            "s3:x-amz-acl" = "bucket-owner-full-control"
+          }
+        }
       }
     ]
   })

@@ -67,6 +67,9 @@ resource "aws_cloudwatch_log_group" "waf_logs" {
   # MUST start with aws-waf-logs- to be accepted by AWS WAFv2
   name              = "aws-waf-logs-clinicflow"
   retention_in_days = 365
+
+  # ELITE GUARDRAIL: KMS Encryption for WAF Logs
+  kms_key_id = aws_kms_key.clinicflow_cmk.arn
 }
 
 resource "aws_wafv2_web_acl_logging_configuration" "clinicflow_waf_logs" {
