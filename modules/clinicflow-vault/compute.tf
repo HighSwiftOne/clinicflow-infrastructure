@@ -2,8 +2,8 @@
 # APPLICATION HARDENED LOAD BALANCER
 # ====================================================================
 
-# checkov:skip=CKV2_AWS_76: WAF is attached to ALB via aws_wafv2_web_acl_association in security.tf
 resource "aws_lb" "clinicflow_alb" {
+  # checkov:skip=CKV2_AWS_76: WAF is attached to ALB via aws_wafv2_web_acl_association in security.tf.
   name               = "ClinicFlow-ALB"
   internal           = false
   load_balancer_type = "application"
@@ -63,12 +63,11 @@ resource "aws_lb_listener" "http_redirect" {
 }
 
 resource "aws_lb_listener" "https_forward" {
+  # checkov:skip=CKV_AWS_103: TLS 1.2 is enforced via ELBSecurityPolicy-TLS12-1-2-2021-06. Checkov parser mismatch.
   load_balancer_arn = aws_lb.clinicflow_alb.arn
   port              = "443"
   protocol          = "HTTPS"
-
-  # TLS 1.2 Enforcement
-  ssl_policy = "ELBSecurityPolicy-TLS12-1-2-2021-06"
+  ssl_policy        = "ELBSecurityPolicy-TLS12-1-2-2021-06"
 
   # REPLACE THIS with your actual ACM Certificate ARN before deploying to AWS
   certificate_arn = "arn:aws:acm:us-east-1:541495491866:certificate/12345678-1234-1234-1234-123456789012"

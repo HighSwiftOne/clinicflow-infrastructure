@@ -13,3 +13,9 @@ variable "environment" {
 variable "aws_region" {
   default = "us-east-1"
 }
+
+variable "alert_email" {
+  description = "Email address for receiving SNS security alerts"
+  type        = string
+  default     = "conallkeenan@gmail.com" # Replace with your actual email
+}
