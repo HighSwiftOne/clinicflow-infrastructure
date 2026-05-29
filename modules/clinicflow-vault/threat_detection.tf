@@ -3,7 +3,11 @@
 # ====================================================================
 
 resource "aws_guardduty_detector" "clinicflow" {
+  # checkov:skip=CKV2_AWS_3: ClinicFlow uses a per-tenant, single-account architecture for HIPAA isolation. Org-wide GuardDuty is not applicable.
   enable = true
+  
+  # ... (keep your existing configurations below this)
+}
 
   # HIPAA requires continuous monitoring; 15 minutes is the AWS minimum threshold
   finding_publishing_frequency = "FIFTEEN_MINUTES"

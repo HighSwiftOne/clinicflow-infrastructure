@@ -105,7 +105,7 @@ resource "aws_config_configuration_recorder" "main" {
 
 resource "aws_config_delivery_channel" "main" {
   name           = "clinicflow-delivery-channel"
-  s3_bucket_name = module.pilot_medspa.aws_s3_bucket.cloudtrail_bucket.id
+  s3_bucket_name = aws_s3_bucket.cloudtrail_bucket.id
   s3_key_prefix  = "AWSLogs/${data.aws_caller_identity.current.account_id}/Config"
 
   depends_on = [aws_config_configuration_recorder.main]
