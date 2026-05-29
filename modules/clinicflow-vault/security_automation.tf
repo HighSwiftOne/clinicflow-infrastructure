@@ -281,7 +281,7 @@ resource "aws_config_remediation_configuration" "s3_public_read_remediation" {
   }
 
   parameter {
-    name           = "BucketName"
-    resource_value = "RESOURCE_ID" # Passes the bucket name from Config
+    name           = "S3BucketName" # <--- MUST BE S3BucketName
+    resource_value = "RESOURCE_ID"
   }
 }

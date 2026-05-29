@@ -84,7 +84,7 @@ resource "aws_backup_selection" "production_resources" {
 
   condition {
     string_equals {
-      key   = "Environment"
+      key   = "aws:ResourceTag/Environment" # <--- AWS requires this exact prefix
       value = "Production"
     }
   }
