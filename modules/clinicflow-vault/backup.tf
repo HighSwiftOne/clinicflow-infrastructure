@@ -78,9 +78,9 @@ resource "aws_backup_plan" "daily_plan" {
 # TAG-BASED RESOURCE SELECTION
 # ============================================
 resource "aws_backup_selection" "production_resources" {
-  name     = "clinicflow-backup-selection"
-  plan_id  = aws_backup_plan.daily_plan.id
-  role_arn = aws_iam_role.backup_role.arn
+  name         = "clinicflow-backup-selection"
+  plan_id      = aws_backup_plan.daily_plan.id
+  iam_role_arn = aws_iam_role.backup_role.arn
 
   condition {
     string_equals {

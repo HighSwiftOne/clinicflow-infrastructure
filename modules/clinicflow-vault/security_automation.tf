@@ -266,14 +266,13 @@ resource "aws_iam_role_policy" "remediation_s3_policy" {
 # CONFIG REMEDIATION CONFIGURATION
 # ============================================
 resource "aws_config_remediation_configuration" "s3_public_read_remediation" {
-  config_rule_name           = aws_config_config_rule.s3_no_public_read.name
-  resource_type              = "AWS::S3::Bucket"
-  target_type                = "SSM_DOCUMENT"
-  target_id                  = "AWS-DisableS3BucketPublicReadWrite"
-  target_version             = "1"
-  automatic                  = true # Trigger immediately on violation
-  maximum_automatic_attempts = 3
-  retry_seconds              = 60
+  config_rule_name = aws_config_config_rule.s3_no_public_read.name
+  resource_type    = "AWS::S3::Bucket"
+  target_type      = "SSM_DOCUMENT"
+  target_id        = "AWS-DisableS3BucketPublicReadWrite"
+  target_version   = "1"
+  automatic        = true # Trigger immediately on violation
+
 
   parameter {
     name         = "AutomationAssumeRole"

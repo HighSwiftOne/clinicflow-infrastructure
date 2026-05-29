@@ -42,7 +42,7 @@ resource "aws_iam_role_policy" "config_s3" {
         Action = [
           "s3:PutObject"
         ]
-        Resource = "${module.pilot_medspa.aws_s3_bucket.cloudtrail_bucket.arn}/*"
+        Resource = "${aws_s3_bucket.cloudtrail_bucket.arn}/*"
         Condition = {
           StringEquals = {
             "s3:x-amz-acl" = "bucket-owner-full-control"
@@ -54,7 +54,7 @@ resource "aws_iam_role_policy" "config_s3" {
         Action = [
           "s3:GetBucketAcl"
         ]
-        Resource = module.pilot_medspa.aws_s3_bucket.cloudtrail_bucket.arn
+        Resource = aws_s3_bucket.cloudtrail_bucket.arn
       }
     ]
   })
@@ -64,7 +64,7 @@ resource "aws_iam_role_policy" "config_s3" {
 # S3 BUCKET POLICY (Allow Config to write)
 # ============================================
 resource "aws_s3_bucket_policy" "config_delivery" {
-  bucket = module.pilot_medspa.aws_s3_bucket.cloudtrail_bucket.id
+  bucket = aws_s3_bucket.cloudtrail_bucket.id
   policy = data.aws_iam_policy_document.config_delivery.json
 }
 
@@ -80,7 +80,7 @@ data "aws_iam_policy_document" "config_delivery" {
       "s3:PutObject"
     ]
     resources = [
-      "${module.pilot_medspa.aws_s3_bucket.cloudtrail_bucket.arn}/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
+      "${aws_s3_bucket.cloudtrail_bucket.arn}/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
     ]
     condition {
       test     = "StringEquals"
