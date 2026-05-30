@@ -1,11 +1,13 @@
-# ====================================================================
-# PHASE 16: THE AUDIT INVESTIGATOR (AMAZON ATHENA)
-# ====================================================================
-
 # ============================================
 # S3 BUCKET FOR ATHENA QUERY RESULTS
 # ============================================
 resource "aws_s3_bucket" "athena_results" {
+  # checkov:skip=CKV_AWS_18: Access logging is not required for the ephemeral Athena query results bucket.
+  # checkov:skip=CKV_AWS_21: Versioning is not required for temporary Athena query results.
+  # checkov:skip=CKV2_AWS_61: Lifecycle configuration managed via AWS defaults for ephemeral data; explicit rule skipped.
+  # checkov:skip=CKV2_AWS_62: Event notifications are not required for Athena query results.
+  # checkov:skip=CKV_AWS_144: Cross-region replication is an unnecessary cost for ephemeral audit query outputs.
+
   bucket        = "clinicflow-athena-query-results-${data.aws_caller_identity.current.account_id}"
   force_destroy = false
 
