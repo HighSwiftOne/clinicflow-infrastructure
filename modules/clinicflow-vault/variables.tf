@@ -17,10 +17,15 @@ variable "aws_region" {
 variable "alert_email" {
   description = "Email address for receiving SNS security alerts"
   type        = string
-  default     = "conallkeenan@gmail.com" # Replace with your actual email
+  default     = "conallkeenan@gmail.com"
 }
 
 variable "vpc_id" {
   description = "The explicit ID of the target VPC for this specific deployment"
+  type        = string
+}
+
+variable "acm_certificate_arn" {
+  description = "The ARN of the ACM certificate to attach to the ALB HTTPS listener"
   type        = string
 }

@@ -31,8 +31,7 @@ provider "aws" {
 module "pilot_medspa" {
   source = "./modules/clinicflow-vault"
 
-  # Injecting the explicit target network for MedSpa Pilot #1
-  vpc_id = "vpc-0b16b471db8de244e"
-
-  # ... (keep any other variables you already have here)
+  # EXPLICIT PARAMETER INJECTION
+  vpc_id              = "vpc-0b16b471db8de244e"
+  acm_certificate_arn = "arn:aws:acm:us-east-1:541495491866:certificate/0f7881ea-dadb-4d5d-b4ba-ab04c866efd9"
 }
