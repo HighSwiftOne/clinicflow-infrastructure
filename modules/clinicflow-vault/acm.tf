@@ -35,4 +35,8 @@ resource "aws_acm_certificate" "sandbox_cert" {
     Environment = "Sandbox"
     Security    = "Automated-Internal-PKI"
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
