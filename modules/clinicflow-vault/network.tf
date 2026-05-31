@@ -1,15 +1,8 @@
 # ====================================================================
-# VIRTUAL PRIVATE CLOUD ROOT NETWORK (DATA SOURCED)
+# VIRTUAL PRIVATE CLOUD ROOT NETWORK (ANCHORED STATE)
 # ====================================================================
 data "aws_vpc" "clinicflow_vpc" {
-  filter {
-    name   = "tag:Name"
-    values = ["ClinicFlow-Prod-VPC"]
-  }
-  filter {
-    name   = "cidr"
-    values = ["10.0.0.0/16"]
-  }
+  id = "vpc-0b16b471db8de244e"
 }
 
 # ====================================================================
