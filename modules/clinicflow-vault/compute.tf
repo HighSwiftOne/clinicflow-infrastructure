@@ -60,14 +60,13 @@ resource "aws_lb_listener" "http_redirect" {
 }
 
 resource "aws_lb_listener" "https_forward" {
-  # checkov:skip=CKV_AWS_103: TLS 1.2 is enforced via ELBSecurityPolicy-TLS12-1-2-2021-06. Checkov parser mismatch.
   load_balancer_arn = aws_lb.clinicflow_alb.arn
   port              = "443"
   protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-TLS12-1-2-2021-06"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
 
-  # REPLACE THIS with your actual ACM Certificate ARN before deploying to AWS
-  certificate_arn = "arn:aws:acm:us-east-1:541495491866:certificate/12345678-1234-1234-1234-123456789012"
+  # Injecting the dynamic Terraform-generated Sandbox Certificate
+  certificate_arn = aws_acm_certificate.sandbox_cert.arn
 
   default_action {
     type             = "forward"

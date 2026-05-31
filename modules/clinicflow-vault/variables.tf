@@ -24,8 +24,3 @@ variable "vpc_id" {
   description = "The explicit ID of the target VPC for this specific deployment"
   type        = string
 }
-
-variable "acm_certificate_arn" {
-  description = "The ARN of the ACM certificate to attach to the ALB HTTPS listener"
-  type        = string
-}
