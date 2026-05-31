@@ -26,12 +26,6 @@ resource "aws_lb" "clinicflow_alb" {
   }
 }
 
-tags = {
-  Environment = "Production"
-  HIPAA       = "NetworkBoundary"
-}
-
-
 # --- Target Group ---
 resource "aws_lb_target_group" "clinicflow_tg" {
   # checkov:skip=CKV_AWS_378:Architecture - Target group is internal. ALB terminates TLS at the edge.
