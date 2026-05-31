@@ -1,4 +1,3 @@
-# trigger: forcing checkov audit refresh
 # ============================================
 # S3 BUCKET FOR ATHENA QUERY RESULTS
 # ============================================
@@ -8,7 +7,7 @@ resource "aws_s3_bucket" "athena_results" {
   # checkov:skip=CKV2_AWS_61: Lifecycle configuration managed via AWS defaults for ephemeral data; explicit rule skipped.
   # checkov:skip=CKV2_AWS_62: Event notifications are not required for Athena query results.
   # checkov:skip=CKV_AWS_144: Cross-region replication is an unnecessary cost for ephemeral audit query outputs.
-  
+
   bucket        = "clinicflow-athena-query-results-${data.aws_caller_identity.current.account_id}"
   force_destroy = false
 
@@ -92,3 +91,18 @@ resource "aws_athena_workgroup" "auditors" {
     Environment = "Production"
     Service     = "Athena"
   }
+}
+
+# ============================================
+# ATHENA DATABASE (Container for CloudTrail Logs)
+# ============================================
+resource "aws_athena_database" "audit_logs" {
+  name          = "clinicflow_audit_logs"
+  bucket        = aws_s3_bucket.athena_results.id
+  force_destroy = false
+
+  encryption_configuration {
+    encryption_option = "SSE_KMS"
+    kms_key           = aws_kms_key.clinicflow_cmk.arn
+  }
+}
