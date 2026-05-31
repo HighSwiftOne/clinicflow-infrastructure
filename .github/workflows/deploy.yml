@@ -8,6 +8,9 @@ on:
     branches:
       - main
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 concurrency:
   group: tf-state-lock-${{ github.ref }}
   cancel-in-progress: false
@@ -42,7 +45,7 @@ jobs:
         uses: aquasecurity/tfsec-action@v1.0.3
         with:
           soft_fail: false # HARD FAIL: Kills pipeline on CRITICAL/HIGH
-          arguments: --minimum-severity HIGH --exclude-dir .terraform
+          args: --minimum-severity HIGH --exclude-dir .terraform
 
       - name: Run Compliance Scanning (Checkov)
         uses: bridgecrewio/checkov-action@master
@@ -53,6 +56,7 @@ jobs:
           compact: true
           soft_fail_on: SKIPPED_CHECKS
           output_format: cli
+          github_token: ${{ secrets.GITHUB_TOKEN }}
       # ====================================================================
 
       - name: Initialize Code Base Backend Mapping
