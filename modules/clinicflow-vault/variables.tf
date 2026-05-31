@@ -19,3 +19,8 @@ variable "alert_email" {
   type        = string
   default     = "conallkeenan@gmail.com" # Replace with your actual email
 }
+
+variable "vpc_id" {
+  description = "The explicit ID of the target VPC for this specific deployment"
+  type        = string
+}

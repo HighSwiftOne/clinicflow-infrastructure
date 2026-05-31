@@ -1,8 +1,8 @@
 # ====================================================================
-# VIRTUAL PRIVATE CLOUD ROOT NETWORK (ANCHORED STATE)
+# VIRTUAL PRIVATE CLOUD ROOT NETWORK (PARAMETERIZED INJECTION)
 # ====================================================================
 data "aws_vpc" "clinicflow_vpc" {
-  id = "vpc-0b16b471db8de244e"
+  id = var.vpc_id
 }
 
 # ====================================================================

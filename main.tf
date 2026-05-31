@@ -30,4 +30,9 @@ provider "aws" {
 # ====================================================================
 module "pilot_medspa" {
   source = "./modules/clinicflow-vault"
+
+  # Injecting the explicit target network for MedSpa Pilot #1
+  vpc_id = "vpc-0b16b471db8de244e"
+
+  # ... (keep any other variables you already have here)
 }
