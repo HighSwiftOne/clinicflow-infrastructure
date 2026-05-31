@@ -6,6 +6,10 @@ data "aws_vpc" "clinicflow_vpc" {
     name   = "tag:Name"
     values = ["ClinicFlow-Prod-VPC"]
   }
+  filter {
+    name   = "cidr"
+    values = ["10.0.0.0/16"]
+  }
 }
 
 # ====================================================================
