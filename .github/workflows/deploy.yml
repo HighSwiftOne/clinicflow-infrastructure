@@ -56,7 +56,8 @@ jobs:
           compact: true
           soft_fail_on: SKIPPED_CHECKS
           output_format: cli
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # ====================================================================
 
       - name: Initialize Code Base Backend Mapping
