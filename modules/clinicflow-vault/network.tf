@@ -2,15 +2,9 @@
 # VIRTUAL PRIVATE CLOUD ROOT NETWORK (DATA SOURCED)
 # ====================================================================
 data "aws_vpc" "clinicflow_vpc" {
-  id = "vpc-0b16b471db8de244e"
-}
-
-resource "aws_default_security_group" "default" {
-  vpc_id = data.aws_vpc.clinicflow_vpc.id
-
-  tags = {
-    Name        = "ClinicFlow-Default-Blackhole"
-    Environment = "Production"
+  filter {
+    name   = "tag:Name"
+    values = ["ClinicFlow-Prod-VPC"]
   }
 }
 
