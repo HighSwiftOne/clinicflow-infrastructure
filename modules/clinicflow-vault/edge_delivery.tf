@@ -9,10 +9,10 @@ resource "aws_cloudfront_distribution" "clinicflow_cdn" {
   # checkov:skip=CKV2_AWS_47: WAF attachment bypassed due to regionality constraints.
   # checkov:skip=CKV2_AWS_32: OAI is not required because the origin is an ALB, not an S3 bucket.
 
-  enabled             = true
-  is_ipv6_enabled     = true
-  comment             = "ClinicFlow CDN - MedSpa Patient Portal"
-  
+  enabled         = true
+  is_ipv6_enabled = true
+  comment         = "ClinicFlow CDN - MedSpa Patient Portal"
+
   # Origin: Application Load Balancer
   origin {
     domain_name = aws_lb.clinicflow_alb.dns_name
@@ -64,4 +64,4 @@ resource "aws_cloudfront_distribution" "clinicflow_cdn" {
     Service     = "CloudFront"
     HIPAA       = "EdgeEncryption"
   }
-}terraform fmt -recursive
+}
