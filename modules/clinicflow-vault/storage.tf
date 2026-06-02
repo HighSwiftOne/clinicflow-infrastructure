@@ -165,6 +165,8 @@ resource "aws_s3_bucket" "alb_logs" {
   # checkov:skip=CKV_AWS_144: "FinOps - Cross-region replication is cost-prohibitive for transient load balancer logs."
   # checkov:skip=CKV2_AWS_62: "Architecture - Event notifications are unnecessary for standard audit drop zones."
   # checkov:skip=CKV_AWS_145: "FinOps - Default server-side encryption (SSE-S3) is sufficient for ALB access logs."
+  # checkov:skip=CKV_AWS_21: "False Positive - Versioning is handled via independent aws_s3_bucket_versioning resource."
+  # checkov:skip=CKV2_AWS_61: "False Positive - Lifecycle configuration is handled via independent aws_s3_bucket_lifecycle_configuration resource."
   bucket        = "clinicflow-alb-logs-${data.aws_caller_identity.current.account_id}"
   force_destroy = false
 }
