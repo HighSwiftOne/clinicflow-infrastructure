@@ -183,7 +183,7 @@ resource "aws_s3_bucket_policy" "alb_logs" {
         Principal = {
           AWS = data.aws_elb_service_account.main.arn
         }
-        Action   = "s3:PutObject"
+        Action = "s3:PutObject"
         # The Fix: We injected the /alb-logs/ prefix into the IAM path
         Resource = "${aws_s3_bucket.alb_logs.arn}/alb-logs/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
       }
