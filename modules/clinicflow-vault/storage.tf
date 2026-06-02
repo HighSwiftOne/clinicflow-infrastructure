@@ -173,20 +173,38 @@ resource "aws_s3_bucket_public_access_block" "alb_logs_block" {
   restrict_public_buckets = true
 }
 
-resource "aws_s3_bucket_policy" "alb_logs" {
+# ====================================================================
+# ELITE COMPLIANCE: ALB AUDIT LOGS
+# ====================================================================
+data "aws_elb_service_account" "main" {}
+
+resource "aws_s3_bucket" "alb_logs" {
+  # checkov:skip=CKV_AWS_18: "Architecture - This bucket IS the centralized access logging location; logging itself is redundant."
+  # checkov:skip=CKV_AWS_144: "FinOps - Cross-region replication is cost-prohibitive for transient load balancer logs."
+  # checkov:skip=CKV2_AWS_62: "Architecture - Event notifications are unnecessary for standard audit drop zones."
+  # checkov:skip=CKV_AWS_145: "FinOps - Default server-side encryption (SSE-S3) is sufficient for ALB access logs."
+  bucket        = "clinicflow-alb-logs-${data.aws_caller_identity.current.account_id}"
+  force_destroy = false
+}
+
+# Fix for CKV_AWS_21: Versioning
+resource "aws_s3_bucket_versioning" "alb_logs_versioning" {
   bucket = aws_s3_bucket.alb_logs.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          AWS = data.aws_elb_service_account.main.arn
-        }
-        Action = "s3:PutObject"
-        # The Fix: We injected the /alb-logs/ prefix into the IAM path
-        Resource = "${aws_s3_bucket.alb_logs.arn}/alb-logs/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
-      }
-    ]
-  })
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# Fix for CKV2_AWS_61: Lifecycle Rules
+resource "aws_s3_bucket_lifecycle_configuration" "alb_logs_lifecycle" {
+  bucket = aws_s3_bucket.alb_logs.id
+
+  rule {
+    id     = "alb-log-expiration"
+    status = "Enabled"
+
+    expiration {
+      days = 90
+    }
+  }
 }
