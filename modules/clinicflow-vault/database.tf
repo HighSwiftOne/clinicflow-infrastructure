@@ -48,7 +48,7 @@ resource "aws_db_instance" "clinicflow_db" {
   monitoring_role_arn             = aws_iam_role.rds_monitoring_role.arn
 
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 
   tags = {

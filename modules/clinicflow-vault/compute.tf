@@ -3,22 +3,24 @@
 # ====================================================================
 
 resource "aws_lb" "clinicflow_alb" {
-  # checkov:skip=CKV_AWS_91: ALB access logging temporarily disabled to bypass S3 IAM circular dependency for pilot.
   # checkov:skip=CKV_AWS_150: Deletion protection disabled for pilot teardown flexibility.
   # checkov:skip=CKV_AWS_131: Dropping invalid HTTP headers is bypassed for pilot; WAF handles primary request inspection.
   # checkov:skip=CKV2_AWS_76: Explicit Log4j AMR WAF rule bypassed; AWS Managed Rules provide baseline pilot coverage.
-
   name               = "ClinicFlow-ALB"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.web_sg.id]
   subnets            = [aws_subnet.public_a.id, aws_subnet.public_b.id]
 
+  # ELITE COMPLIANCE: Active ALB Audit Logging
   access_logs {
-    bucket  = aws_s3_bucket.clinicflow_logs.id
+    bucket  = aws_s3_bucket.alb_logs.id
     prefix  = "alb-logs"
-    enabled = false
-  }
+    enabled = true
+  } # <- This closing bracket right here separates the logs from the tags!
+
+  # Explicit dependency to prevent the IAM race condition
+  depends_on = [aws_s3_bucket_policy.alb_logs]
 
   tags = {
     Environment = "Production"
@@ -32,7 +34,7 @@ resource "aws_lb_target_group" "clinicflow_tg" {
   name     = "ClinicFlow-TargetGroup"
   port     = 80
   protocol = "HTTP"
-  vpc_id   = data.aws_vpc.clinicflow_vpc.id
+  vpc_id   = aws_vpc.clinicflow_vpc.id
 
   health_check {
     path                = "/"

@@ -82,3 +82,20 @@ resource "aws_dynamodb_table" "old_terraform_locks" {
     type = "S"
   }
 }
+
+resource "aws_dynamodb_table" "terraform_state_lock" {
+  name         = "clinicflow-state-lock"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "LockID"
+
+  attribute {
+    name = "LockID"
+    type = "S"
+  }
+
+  tags = {
+    Name        = "ClinicFlow-State-Lock"
+    Environment = "Production"
+    Purpose     = "Terraform State Management"
+  }
+}

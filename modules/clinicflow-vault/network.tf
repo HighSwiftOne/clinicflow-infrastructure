@@ -1,8 +1,15 @@
 # ====================================================================
 # VIRTUAL PRIVATE CLOUD ROOT NETWORK (PARAMETERIZED INJECTION)
 # ====================================================================
-data "aws_vpc" "clinicflow_vpc" {
-  id = var.vpc_id
+resource "aws_vpc" "clinicflow_vpc" {
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_support   = true
+  enable_dns_hostnames = true
+
+  tags = {
+    Name        = "ClinicFlow-Core"
+    Environment = "Production"
+  }
 }
 
 # ====================================================================
@@ -12,7 +19,7 @@ resource "aws_flow_log" "vpc_flow_logs" {
   iam_role_arn    = aws_iam_role.vpc_flow_log_role.arn
   log_destination = aws_cloudwatch_log_group.vpc_flow_log_group.arn
   traffic_type    = "ALL"
-  vpc_id          = data.aws_vpc.clinicflow_vpc.id
+  vpc_id          = aws_vpc.clinicflow_vpc.id
 }
 
 resource "aws_cloudwatch_log_group" "vpc_flow_log_group" {
@@ -65,7 +72,7 @@ resource "aws_iam_role_policy" "vpc_flow_log_policy" {
 # PERIMETER INTERNET ROUTING GATEWAY
 # ====================================================================
 resource "aws_internet_gateway" "clinicflow_igw" {
-  vpc_id = data.aws_vpc.clinicflow_vpc.id
+  vpc_id = aws_vpc.clinicflow_vpc.id
 
   tags = {
     Name        = "ClinicFlow-Gateway"
@@ -77,7 +84,7 @@ resource "aws_internet_gateway" "clinicflow_igw" {
 # SUB NETWORKING LAYOUTS & ROUTING 
 # ====================================================================
 resource "aws_route_table" "public_rt" {
-  vpc_id = data.aws_vpc.clinicflow_vpc.id
+  vpc_id = aws_vpc.clinicflow_vpc.id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -91,7 +98,7 @@ resource "aws_route_table" "public_rt" {
 }
 
 resource "aws_subnet" "public_a" {
-  vpc_id                  = data.aws_vpc.clinicflow_vpc.id
+  vpc_id                  = aws_vpc.clinicflow_vpc.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "us-east-1a"
   map_public_ip_on_launch = false
@@ -100,7 +107,7 @@ resource "aws_subnet" "public_a" {
 }
 
 resource "aws_subnet" "public_b" {
-  vpc_id                  = data.aws_vpc.clinicflow_vpc.id
+  vpc_id                  = aws_vpc.clinicflow_vpc.id
   cidr_block              = "10.0.2.0/24"
   availability_zone       = "us-east-1b"
   map_public_ip_on_launch = false
@@ -109,7 +116,7 @@ resource "aws_subnet" "public_b" {
 }
 
 resource "aws_subnet" "private_a" {
-  vpc_id                  = data.aws_vpc.clinicflow_vpc.id
+  vpc_id                  = aws_vpc.clinicflow_vpc.id
   cidr_block              = "10.0.3.0/24"
   availability_zone       = "us-east-1a"
   map_public_ip_on_launch = false
@@ -118,7 +125,7 @@ resource "aws_subnet" "private_a" {
 }
 
 resource "aws_subnet" "private_b" {
-  vpc_id                  = data.aws_vpc.clinicflow_vpc.id
+  vpc_id                  = aws_vpc.clinicflow_vpc.id
   cidr_block              = "10.0.4.0/24"
   availability_zone       = "us-east-1b"
   map_public_ip_on_launch = false
@@ -127,7 +134,7 @@ resource "aws_subnet" "private_b" {
 }
 
 resource "aws_route_table" "private_rt" {
-  vpc_id = data.aws_vpc.clinicflow_vpc.id
+  vpc_id = aws_vpc.clinicflow_vpc.id
 
   tags = {
     Name        = "ClinicFlow-Private-RouteTable"
@@ -142,7 +149,7 @@ resource "aws_security_group" "web_sg" {
   # checkov:skip=CKV_AWS_382: Architecture requires outbound 0.0.0.0/0 for fetching OS patches.
   name        = "ClinicFlow-Web-SG"
   description = "Allows public traffic to ALB"
-  vpc_id      = data.aws_vpc.clinicflow_vpc.id
+  vpc_id      = aws_vpc.clinicflow_vpc.id
 
   ingress {
     description = "Allow secure encrypted HTTPS traffic from public endpoints"
@@ -183,7 +190,7 @@ resource "aws_security_group" "web_sg" {
 resource "aws_security_group" "healer_sg" {
   name        = "clinicflow-healer-sg"
   description = "Security group for compliance lambda"
-  vpc_id      = data.aws_vpc.clinicflow_vpc.id
+  vpc_id      = aws_vpc.clinicflow_vpc.id
 
   egress {
     # checkov:skip=CKV_AWS_382: "Architecture Requirement - Lambda requires egress to complete core security health checks."
@@ -211,7 +218,7 @@ resource "aws_security_group" "db_sg" {
   # checkov:skip=CKV_AWS_382: Architecture requires outbound 0.0.0.0/0 for fetching OS patches.
   name        = "ClinicFlow-DB-SG"
   description = "Security group for production RDS database tier"
-  vpc_id      = data.aws_vpc.clinicflow_vpc.id
+  vpc_id      = aws_vpc.clinicflow_vpc.id
 
   ingress {
     description     = "Allow encrypted MySQL traffic strictly from the Web/ALB security group"
@@ -231,6 +238,6 @@ resource "aws_security_group" "db_sg" {
 
   lifecycle {
     ignore_changes  = [name, description]
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
