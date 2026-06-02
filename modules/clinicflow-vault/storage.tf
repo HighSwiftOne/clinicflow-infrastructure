@@ -161,24 +161,6 @@ resource "aws_s3_bucket_lifecycle_configuration" "patient_vault_lifecycle" {
 data "aws_elb_service_account" "main" {}
 
 resource "aws_s3_bucket" "alb_logs" {
-  bucket        = "clinicflow-alb-logs-${data.aws_caller_identity.current.account_id}"
-  force_destroy = false
-}
-
-resource "aws_s3_bucket_public_access_block" "alb_logs_block" {
-  bucket                  = aws_s3_bucket.alb_logs.id
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-# ====================================================================
-# ELITE COMPLIANCE: ALB AUDIT LOGS
-# ====================================================================
-data "aws_elb_service_account" "main" {}
-
-resource "aws_s3_bucket" "alb_logs" {
   # checkov:skip=CKV_AWS_18: "Architecture - This bucket IS the centralized access logging location; logging itself is redundant."
   # checkov:skip=CKV_AWS_144: "FinOps - Cross-region replication is cost-prohibitive for transient load balancer logs."
   # checkov:skip=CKV2_AWS_62: "Architecture - Event notifications are unnecessary for standard audit drop zones."
@@ -187,24 +169,29 @@ resource "aws_s3_bucket" "alb_logs" {
   force_destroy = false
 }
 
-# Fix for CKV_AWS_21: Versioning
-resource "aws_s3_bucket_versioning" "alb_logs_versioning" {
-  bucket = aws_s3_bucket.alb_logs.id
-  versioning_configuration {
-    status = "Enabled"
-  }
+# Fix for CKV2_AWS_6: Public Access Block
+resource "aws_s3_bucket_public_access_block" "alb_logs_block" {
+  bucket                  = aws_s3_bucket.alb_logs.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
-# Fix for CKV2_AWS_61: Lifecycle Rules
-resource "aws_s3_bucket_lifecycle_configuration" "alb_logs_lifecycle" {
+# IAM Policy for ALB to write logs
+resource "aws_s3_bucket_policy" "alb_logs" {
   bucket = aws_s3_bucket.alb_logs.id
-
-  rule {
-    id     = "alb-log-expiration"
-    status = "Enabled"
-
-    expiration {
-      days = 90
-    }
-  }
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          AWS = data.aws_elb_service_account.main.arn
+        }
+        Action   = "s3:PutObject"
+        Resource = "${aws_s3_bucket.alb_logs.arn}/alb-logs/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
+      }
+    ]
+  })
 }

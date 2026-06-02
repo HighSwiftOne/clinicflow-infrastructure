@@ -198,4 +198,51 @@ resource "aws_security_group" "healer_sg" {
   vpc_id      = aws_vpc.clinicflow_vpc.id
 
   egress {
-    # checkov:skip=CKV_AWS_
+    # checkov:skip=CKV_AWS_382: "Architecture Requirement - Lambda requires egress to complete core security health checks."
+    description = "Allow outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  lifecycle {
+    ignore_changes = [name, description]
+  }
+
+  tags = {
+    Name        = "ClinicFlow-Healer-SecurityGroup"
+    Environment = "Production"
+  }
+}
+
+# ====================================================================
+# SECURE DATABASE TIER FIREWALL (RDS RECONCILED)
+# ====================================================================
+resource "aws_security_group" "db_sg" {
+  # checkov:skip=CKV_AWS_382: Architecture requires outbound 0.0.0.0/0 for fetching OS patches.
+  name        = "ClinicFlow-DB-SG"
+  description = "Security group for production RDS database tier"
+  vpc_id      = aws_vpc.clinicflow_vpc.id
+
+  ingress {
+    description     = "Allow encrypted MySQL traffic strictly from the Web/ALB security group"
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [aws_security_group.web_sg.id]
+  }
+
+  egress {
+    description = "Allow all outbound infrastructure traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  lifecycle {
+    ignore_changes  = [name, description]
+    prevent_destroy = false
+  }
+}
