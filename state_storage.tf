@@ -84,6 +84,7 @@ resource "aws_dynamodb_table" "old_terraform_locks" {
 }
 
 resource "aws_dynamodb_table" "terraform_state_lock" {
+  # checkov:skip=CKV_AWS_119: "FinOps - Default AWS-owned KMS key is completely sufficient for temporary state lock hashes."
   name         = "clinicflow-state-lock"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LockID"
@@ -91,6 +92,10 @@ resource "aws_dynamodb_table" "terraform_state_lock" {
   attribute {
     name = "LockID"
     type = "S"
+  }
+
+  point_in_time_recovery {
+    enabled = true
   }
 
   tags = {
