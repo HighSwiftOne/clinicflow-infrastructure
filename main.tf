@@ -31,9 +31,11 @@ provider "aws" {
 # ====================================================================
 # 3. ROOT MODULE DEPLOYMENT CALLER
 # ====================================================================
-module "pilot_medspa" {
-  source = "./modules/clinicflow-vault"
+module "clinicflow_core" {
+  source = "./modules/clinicflow_baseline"
 
-  # Explicit parameter injection
-  vpc_id = var.target_vpc_id
+  client_name = "ClinicFlow-Root-Proxy"
+  environment = "Production"
+  aws_region  = "us-east-1"
+  alert_email = "conallkeenan@gmail.com"
 }
