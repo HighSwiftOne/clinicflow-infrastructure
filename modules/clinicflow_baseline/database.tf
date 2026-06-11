@@ -2,8 +2,8 @@
 # COMPLIANT DATA RETENTION SUBSYSTEMS - RDS TIER
 # ====================================================================
 resource "aws_db_subnet_group" "clinicflow_db_subnet_group" {
-  name       = "clinicflow-db-subnet-group"
-  
+  name = "clinicflow-db-subnet-group"
+
   # Dynamic referencing replaces hardcoded strings
   subnet_ids = [
     aws_subnet.private_a.id,
