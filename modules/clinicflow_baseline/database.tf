@@ -2,17 +2,17 @@
 # COMPLIANT DATA RETENTION SUBSYSTEMS - RDS TIER
 # ====================================================================
 resource "aws_db_subnet_group" "clinicflow_db_subnet_group" {
-  name = "clinicflow-db-subnet-group"
-
-  # Locked to the true physical subnets residing in vpc-0b16b471db8de244e
+  name       = "clinicflow-db-subnet-group"
+  
+  # Dynamic referencing replaces hardcoded strings
   subnet_ids = [
-    "subnet-05453892442d2491a",
-    "subnet-0dbb79900d7a0c3d8",
-    "subnet-0d09d66516dd3f0e2",
-    "subnet-00fec48ee266cff16"
+    aws_subnet.private_a.id,
+    aws_subnet.private_b.id
   ]
 
-  tags = { Name = "ClinicFlow DB Subnet Group" }
+  tags = {
+    Name = "ClinicFlow DB Subnet Group"
+  }
 }
 
 resource "aws_db_instance" "clinicflow_db" {
