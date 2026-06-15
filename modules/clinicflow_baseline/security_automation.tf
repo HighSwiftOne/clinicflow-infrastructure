@@ -286,3 +286,29 @@ resource "aws_config_remediation_configuration" "s3_public_read_remediation" {
   }
 }
 
+resource "aws_config_config_rule" "s3_bucket_public_read_prohibited" {
+  name = "s3-bucket-public-read-prohibited"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "S3_BUCKET_PUBLIC_READ_PROHIBITED"
+  }
+}
+
+resource "aws_config_config_rule" "rds_storage_encrypted" {
+  name = "rds-storage-encrypted"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "RDS_STORAGE_ENCRYPTED"
+  }
+}
+
+resource "aws_config_config_rule" "vpc_flow_logs_enabled" {
+  name = "vpc-flow-logs-enabled"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "VPC_FLOW_LOGS_ENABLED"
+  }
+}

@@ -141,6 +141,11 @@ resource "aws_s3_bucket_lifecycle_configuration" "patient_vault_lifecycle" {
     filter {}
 
     transition {
+      days          = 30
+      storage_class = "STANDARD_IA"
+    }
+
+    transition {
       days          = 90
       storage_class = "GLACIER"
     }
