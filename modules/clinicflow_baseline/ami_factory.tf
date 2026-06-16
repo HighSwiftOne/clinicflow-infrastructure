@@ -93,7 +93,7 @@ resource "aws_imagebuilder_component" "clinicflow_hardening" {
 
 # --- 3. The Factory Floor (Infrastructure Config) ---
 resource "aws_imagebuilder_infrastructure_configuration" "clinicflow_infra" {
-  name                  = "clinicflow-build-infra"
+  name = "clinicflow-infra-config-v2"
   instance_profile_name = aws_iam_instance_profile.image_builder_profile.name
   instance_types        = ["t2.micro"]
   subnet_id             = aws_subnet.public_a.id

@@ -32,7 +32,7 @@ resource "aws_iam_role_policy_attachment" "restore_policy" {
 # IMMUTABLE BACKUP VAULT (WORM Lock)
 # ============================================
 resource "aws_backup_vault" "compliance_vault" {
-  name = "clinicflow-compliance-vault"
+  name = "clinicflow-compliance-vault-v2"
   # Target the CMK directly, no module prefix needed
   kms_key_arn = aws_kms_key.clinicflow_cmk.arn
 

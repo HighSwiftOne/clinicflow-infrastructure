@@ -100,4 +100,5 @@ jobs:
         run: terraform init
 
       - name: Execute Validated Plan
+      - run: terraform state rm module.clinicflow_core.aws_backup_vault.compliance_vault || true
         run: terraform apply tfplan
