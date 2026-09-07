@@ -3,3 +3,16 @@
 *.tfstate.*
 *.tfvars
 errored.tfstate
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# .tfvars files
+*.tfvars
+*.tfvars.json
+
+# Environment variables
+.env
