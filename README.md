@@ -11,26 +11,33 @@ Instead of treating cloud security as a manual checklist, this project demonstra
 
 ## 🏗️ System Architecture
 
-```text
-+-----------------------------------------------------------------------+
-|                              AWS Cloud                                |
-|                                                                       |
-|  +-----------------------------------------------------------------+  |
-|  |                            VPC                                  |  |
-|  |  +-------------------------+       +-------------------------+  |  |
-|  |  |      Public Subnet      |       |     Private Subnet      |  |  |
-|  |  |  [ Internet Gateway ]   |       |   [ ECS Fargate ]       |  |  |
-|  |  |           |             |       |          |              |  |  |
-|  |  |  [ App Load Balancer ]--+-------+-> [ RDS PostgreSQL ]    |  |  |
-|  |  |           |             |       |                         |  |  |
-|  |  |     [ NAT Gateway ]     |       |                         |  |  |
-|  |  +-------------------------+       +-------------------------+  |  |
-|  +-----------------------------------------------------------------+  |
-|                                                                       |
-|  +-----------------------------------------------------------------+  |
-|  |               Security & Automated Remediation                  |  |
-|  |  [ CloudTrail ] ---> [ GuardDuty ] ---> [ EventBridge ]         |  |
-|  |                                                |                |  |
-|  |  [ KMS Encryption ]  [ S3 WORM Vault ] <--- [ Lambda Healer ]   |  |
-|  +-----------------------------------------------------------------+  |
-+-----------------------------------------------------------------------+
+![ClinicFlow Architecture Diagram](./clinicflow-architecture.png)
+
+## ⚙️ Core Architectural Pillars
+
+* **Network Isolation:** Multi-tier VPC architecture featuring a WAF, public Application Load Balancer, private ECS Fargate compute layer, and an isolated RDS PostgreSQL database.
+* **Zero-Trust Data Layer:** Automated Amazon S3 bucket access logging, object locking, and strict bucket policies configured to block public access out-of-the-box.
+* **Event-Driven Security Remediation:** Engineered an auto-healing loop integrating GuardDuty, EventBridge, and a custom Lambda function designed to detect unauthorized API access and trigger IAM session revocation.
+* **Dynamic Cryptographic Envelopes:** Data encryption in transit and at rest utilizing customer-managed AWS KMS keys and AWS Backup Vaults.
+* **CI/CD Compliance Gates:** Integrated Checkov static analysis directly into GitHub Actions to block pre-deployment infrastructure misconfigurations.
+
+## 📋 Regulatory Compliance Mapping
+
+| Federal Statutory Citation | AWS Technical Implementation | Quantifiable Risk Mitigated |
+| :--- | :--- | :--- |
+| **HIPAA 164.312(a)(1)** (Access Control) | IAM Least-Privilege Policies & VPC Private Subnets | Prevents unauthorized network and console access to database layers. |
+| **HIPAA 164.312(a)(2)(iv)** (Encryption) | AWS KMS (Customer Managed Keys) & TLS 1.2 | Ensures PHI remains cryptographically secure at rest and in transit. |
+| **HIPAA 164.312(b)** (Audit Controls) | AWS CloudTrail & S3 Object Lock (WORM) | Creates an immutable, undeletable forensic record of all API calls. |
+| **HIPAA 164.308(a)(6)(ii)** (Incident Response) | Amazon GuardDuty + EventBridge + Lambda | Automates immediate threat isolation, reducing time-to-remediation. |
+
+---
+
+## 🚀 The Operational Context
+As an operator with 18 years of experience managing zero-tolerance precision manufacturing systems, I built this project to bridge the gap between physical systems logic and cloud infrastructure. 
+
+This repository proves my ability to:
+1. Read, write, and deploy Infrastructure-as-Code.
+2. Understand the business liability of cloud misconfigurations.
+3. Systematically troubleshoot deployment pipelines and AWS environments before escalating a ticket.
+
+📫 **Connect with me on [LinkedIn](https://www.linkedin.com/in/conallkeenan)**
